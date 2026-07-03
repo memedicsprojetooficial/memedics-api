@@ -112,7 +112,16 @@
       "Bash(docker exec clava-api-laravel.test-1 php artisan tinker '--execute= *)",
       "Bash(grep -n -B3 -A3 \"medical-report\" \"/mnt/c/Users/Robson/../../wsl.localhost/ubuntu-24.04/home/masterdba6/projetos/clava-api/routes/api.php\" 2>/dev/null || true)",
       "Bash(find \"/mnt/c\" -iname \"PatientMedicalReportController.php\" 2>/dev/null; echo done)",
-      "Bash(MSYS_NO_PATHCONV=1 docker exec clava-api-laravel.test-1 cat /var/www/html/app/Http/Resources/ReportResource.php)"
+      "Bash(MSYS_NO_PATHCONV=1 docker exec clava-api-laravel.test-1 cat /var/www/html/app/Http/Resources/ReportResource.php)",
+      "Bash(find /mnt/c/Users/Robson/Desktop/frontend-web/clavaconsult -iname \"*unidade*\" -o -iname \"*sala*\" 2>/dev/null | grep -v node_modules | head -100)",
+      "PowerShell(cd \"C:\\\\Users\\\\Robson\\\\Desktop\\\\frontend-web\\\\clavaconsult\"; npx tsc --noEmit -p . > tsc_out.txt 2>&1; Write-Output \"EXIT:$LASTEXITCODE\"; Get-Content tsc_out.txt | Select-String \"settings.tsx\")",
+      "mcp__claude-in-chrome__browser_batch",
+      "mcp__claude-in-chrome__computer",
+      "mcp__claude-in-chrome__javascript_tool",
+      "mcp__claude-in-chrome__find",
+      "mcp__claude-in-chrome__read_network_requests",
+      "Bash(php -v)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost/api/plans)"
     ]
   }
 }

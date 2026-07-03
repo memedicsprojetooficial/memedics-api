@@ -144,4 +144,20 @@ class DoctorController extends Controller
 
         return response()->noContent();
     }
+
+    /**
+     * @param Doctor $doctor
+     * @param Request $request
+     * @return Response
+     */
+    public function changePassword(Doctor $doctor, Request $request): Response
+    {
+        $data = $request->validate([
+            'password' => ['required', 'string', 'min:6', 'max:255'],
+        ]);
+
+        $doctor->user->update(['password' => $data['password']]);
+
+        return response()->noContent();
+    }
 }

@@ -83,4 +83,15 @@ class EmployeeController extends Controller
 
         return response()->noContent();
     }
+
+    public function changePassword(Employee $employee, Request $request): Response
+    {
+        $data = $request->validate([
+            'password' => ['required', 'string', 'min:6', 'max:255'],
+        ]);
+
+        $employee->user->update(['password' => $data['password']]);
+
+        return response()->noContent();
+    }
 }

@@ -113,12 +113,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/doctors', [DoctorController::class, 'store'])->can('create', Doctor::class);
     Route::put('/doctors/{doctor}', [DoctorController::class, 'update'])->can('update', Doctor::class);
     Route::delete('/doctors/{doctor}', [DoctorController::class, 'destroy'])->can('delete', Doctor::class);
+    Route::put('/doctors/{doctor}/change-password', [DoctorController::class, 'changePassword'])->can('update', Doctor::class);
 
     Route::get('/employees', [EmployeeController::class, 'index'])->can('viewAny', Employee::class);
     Route::get('/employees/{employee}', [EmployeeController::class, 'show'])->can('view', Employee::class);
     Route::post('/employees', [EmployeeController::class, 'store'])->can('create', Employee::class);
     Route::put('/employees/{employee}', [EmployeeController::class, 'update'])->can('update', Employee::class);
     Route::delete('/employees/{employee}', [EmployeeController::class, 'destroy'])->can('delete', Employee::class);
+    Route::put('/employees/{employee}/change-password', [EmployeeController::class, 'changePassword'])->can('update', Employee::class);
 
     Route::get('/patients', [PatientController::class, 'index'])->can('viewAny', Patient::class);
     Route::get('/patients/{patient}', [PatientController::class, 'show'])->can('view', Patient::class);
