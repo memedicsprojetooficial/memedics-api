@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -23,7 +24,9 @@ class Patient extends Model
         'birthday',
         'document',
         'phone',
-        'email'
+        'phone2',
+        'email',
+        'plan_id'
     ];
 
     protected static function booted()
@@ -45,6 +48,14 @@ class Patient extends Model
     public function address(): HasOne
     {
         return $this->hasOne(Address::class);
+    }
+
+    /**
+     * @return BelongsTo
+     */
+    public function plan(): BelongsTo
+    {
+        return $this->belongsTo(Plan::class);
     }
 
     /**

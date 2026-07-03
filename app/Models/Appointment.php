@@ -50,6 +50,26 @@ class Appointment extends Model
     }
 
     /**
+     * Route params for appointments are the Event id (the id used throughout
+     * the schedule/calendar and returned by EventResource), not this model's
+     * own id — the two tables have independent auto-increment sequences.
+     *
+     * @param mixed $value
+     * @param string|null $field
+     * @return Appointment|null
+     */
+    public function resolveRouteBinding($value, $field = null)
+    {
+        $event = Event::find($value);
+
+        if ($event && $event->event instanceof self) {
+            return $event->event;
+        }
+
+        return $this->where($this->getRouteKeyName(), $value)->first();
+    }
+
+    /**
      * @return BelongsTo
      */
     public function patient(): BelongsTo

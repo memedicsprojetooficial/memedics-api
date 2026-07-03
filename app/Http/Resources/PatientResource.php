@@ -27,6 +27,8 @@ class PatientResource extends JsonResource
             'phone' => $this->phone,
             'phone2' => $this->phone2,
             'email' => $this->email,
+            'plan_id' => $this->plan_id,
+            'plan' => $this->whenLoaded('plan'),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at
         ];

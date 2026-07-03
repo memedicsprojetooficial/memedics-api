@@ -151,6 +151,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/appointments/{appointment}/medical-report', [AppointmentMedicalReportController::class, 'destroy'])->can('delete', [MedicalReport::class, 'appointment']);
 
     Route::get('/patients/{patient}/medical-history', [PatientMedicalReportController::class, 'index']);//->can('viewAny', MedicalReport::class);
+    Route::get('/patients/{patient}/appointments', [PatientController::class, 'appointments']);
 
     /* Pega as siglas dos conselhos para mostrar no select list de cadastro de medicos e edição*/
 
