@@ -27,7 +27,8 @@ class Appointment extends Model
         'plan_id',
         'type',
         'comment',
-        'status'
+        'status',
+        'public_token'
     ];
 
     protected static function booted()

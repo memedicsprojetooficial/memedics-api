@@ -149,4 +149,57 @@ class EvolutionGoService
             $this->http($instanceApiKey)->get('/instance/status')
         );
     }
+
+    // ── Mensagens ─────────────────────────────────────────────────────────────
+
+    /**
+     * Envia uma mensagem de texto pelo WhatsApp da instância.
+     *
+     * @param string $instanceApiKey  Token da instância
+     * @param string $number          Número do destinatário (com DDI, ex: 5511999999999)
+     * @param string $text            Texto da mensagem
+     */
+    public function sendTextMessage(string $instanceApiKey, string $number, string $text): array
+    {
+        return $this->handle(
+            $this->http($instanceApiKey)->post('/send/text', [
+                'number' => $number,
+                'text'   => $text,
+            ])
+        );
+    }
+
+    /**
+     * Envia uma mensagem com link (preview) pelo WhatsApp da instância.
+     *
+     * @param string      $instanceApiKey  Token da instância
+     * @param string      $number          Número do destinatário (com DDI, ex: 5511999999999)
+     * @param string      $text            Texto/legenda da mensagem
+     * @param string      $url             URL do link
+     * @param string|null $title           Título do card de preview do link
+     * @param string|null $description     Descrição do card de preview do link
+     * @param string|null $imgUrl          Imagem do card de preview do link
+     */
+    public function sendLinkMessage(
+        string $instanceApiKey,
+        string $number,
+        string $text,
+        string $url,
+        ?string $title = null,
+        ?string $description = null,
+        ?string $imgUrl = null,
+    ): array {
+        $payload = array_filter([
+            'number'      => $number,
+            'text'        => $text,
+            'url'         => $url,
+            'title'       => $title,
+            'description' => $description,
+            'imgUrl'      => $imgUrl,
+        ], fn ($v) => $v !== null);
+
+        return $this->handle(
+            $this->http($instanceApiKey)->post('/send/link', $payload)
+        );
+    }
 }

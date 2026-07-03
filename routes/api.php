@@ -12,8 +12,11 @@ use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\MedicalReportController;
 use App\Http\Controllers\PatientController;
 use App\Http\Controllers\PatientMedicalReportController;
+use App\Http\Controllers\AppointmentPublicLinkController;
+use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PlanController;
+use App\Http\Controllers\PublicAppointmentController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportConfigController;
 use App\Http\Controllers\ScheduleController;
@@ -62,6 +65,14 @@ use Illuminate\Support\Facades\Storage;
 
 // Rotas públicas (sem autenticação)
 Route::post('/login', [AuthController::class, 'login']);
+Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLink']);
+Route::post('/reset-password', [PasswordResetController::class, 'reset']);
+
+Route::middleware('throttle:public-appointment')->prefix('public/appointments')->group(function () {
+    Route::get('/{token}', [PublicAppointmentController::class, 'show']);
+    Route::post('/{token}/confirm', [PublicAppointmentController::class, 'confirm']);
+    Route::post('/{token}/cancel', [PublicAppointmentController::class, 'cancel']);
+});
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
@@ -136,6 +147,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/appointments/{appointment}', [AppointmentController::class, 'destroy']);
 
     Route::put('/appointments/{appointment}/status', [AppointmentStatusController::class, 'store']);
+    Route::post('/appointments/{appointment}/public-link', [AppointmentPublicLinkController::class, 'store']);
 
     Route::get('/unavailable-times', [BlockedTimeController::class, 'index']);
     Route::get('/unavailable-times/{unavailableTime}', [BlockedTimeController::class, 'show']);
