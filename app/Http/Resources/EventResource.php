@@ -20,7 +20,7 @@ class EventResource extends JsonResource
         switch ($this->type) {
             case 'appointment':
                 return [
-                    'id' => $this->event->id,
+                    'id' => $this->id,
                     'date' => $this->date,
                     'time' => $this->time->format('H:i'),
                     'duration' => $this->duration->format('H:i'),
