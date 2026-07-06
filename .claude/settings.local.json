@@ -150,7 +150,8 @@
       "Bash(find \"\\\\\\\\wsl.localhost\\\\ubuntu-24.04\\\\home\\\\masterdba6\\\\projetos\\\\clava-api\" -path \"*/app/Http/Middleware/*.php\" -type f)",
       "Bash(grep \"\\\\.tsx$\")",
       "Bash(ls -t \"//wsl.localhost/ubuntu-24.04/home/masterdba6/projetos/clava-api/database/migrations\" | head -5)",
-      "Bash(cat \"//wsl.localhost/ubuntu-24.04/home/masterdba6/projetos/clava-api/app/Events/ScheduleUpdated.php\")"
+      "Bash(cat \"//wsl.localhost/ubuntu-24.04/home/masterdba6/projetos/clava-api/app/Events/ScheduleUpdated.php\")",
+      "Bash(curl -s https://viacep.com.br/ws/01310100/json/)"
     ]
   }
 }
