@@ -151,7 +151,10 @@
       "Bash(grep \"\\\\.tsx$\")",
       "Bash(ls -t \"//wsl.localhost/ubuntu-24.04/home/masterdba6/projetos/clava-api/database/migrations\" | head -5)",
       "Bash(cat \"//wsl.localhost/ubuntu-24.04/home/masterdba6/projetos/clava-api/app/Events/ScheduleUpdated.php\")",
-      "Bash(curl -s https://viacep.com.br/ws/01310100/json/)"
+      "Bash(curl -s https://viacep.com.br/ws/01310100/json/)",
+      "Bash(grep -o '^DROP TABLE IF EXISTS `[a-zA-Z_]*`' ./backup-import/backup.sql)",
+      "Bash(curl -s -H \"Authorization: Bearer 1|6tRAbf8yk4szmIO4byKV70UzrL2yvt7XvT0GoSAb\" -H \"Accept: application/json\" \"http://localhost/api/patients?per_page=2\")",
+      "Bash(docker exec memedics-api-laravel.test-1 php artisan tinker '--execute= *)"
     ]
   }
 }

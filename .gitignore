@@ -24,3 +24,6 @@ _ide_helper_models.php
 .elasticbeanstalk/*
 !.elasticbeanstalk/*.cfg.yml
 !.elasticbeanstalk/*.global.yml
+
+# Windows Zone.Identifier metadata (created when files are downloaded/extracted)
+*:Zone.Identifier

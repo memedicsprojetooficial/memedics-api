@@ -19,3 +19,7 @@
 ./vendor/bin/sail artisan migrate --path=database/migrations/2026_05_26_000007_add_company_id_to_unit_addresses_table.php
 
 ./vendor/bin/sail artisan migrate --path=database/migrations/2026_05_26_000008_add_unique_room_schedule_to_work_times_table.php
+
+./vendor/bin/sail artisan migrate --path=database/migrations/2022_01_19_234106_create_specialties_table.php
+
+./vendor/bin/sail artisan migrate --path=database/migrations/2026_06_29_105615_add_actuation_to_specialties_table.php
