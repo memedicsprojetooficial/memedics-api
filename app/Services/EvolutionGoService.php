@@ -14,18 +14,20 @@ class EvolutionGoService
 
     public function __construct()
     {
-        $this->baseUrl = rtrim(config('services.evolution_go.url'), '/');
-        $this->apiKey  = config('services.evolution_go.api_key');
-
-        if (empty($this->baseUrl) || empty($this->apiKey)) {
-            throw new RuntimeException('Evolution Go não configurado. Defina EVOLUTION_GO_URL e EVOLUTION_GO_APIKEY no .env.');
-        }
+        $this->baseUrl = rtrim((string) config('services.evolution_go.url'), '/');
+        $this->apiKey  = (string) config('services.evolution_go.api_key');
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     private function http(string $instanceApiKey = null): \Illuminate\Http\Client\PendingRequest
     {
+        // Validado aqui (e não no construtor) para o erro ser capturado pelo
+        // tratamento padrão das chamadas, em vez de estourar na injeção de dependência.
+        if (empty($this->baseUrl) || empty($this->apiKey)) {
+            throw new RuntimeException('Evolution Go não configurado. Defina EVOLUTION_GO_URL e EVOLUTION_GO_APIKEY no .env.');
+        }
+
         return Http::baseUrl($this->baseUrl)
             ->withHeaders(['apikey' => $instanceApiKey ?? $this->apiKey])
             ->acceptJson()

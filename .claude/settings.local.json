@@ -154,7 +154,25 @@
       "Bash(curl -s https://viacep.com.br/ws/01310100/json/)",
       "Bash(grep -o '^DROP TABLE IF EXISTS `[a-zA-Z_]*`' ./backup-import/backup.sql)",
       "Bash(curl -s -H \"Authorization: Bearer 1|6tRAbf8yk4szmIO4byKV70UzrL2yvt7XvT0GoSAb\" -H \"Accept: application/json\" \"http://localhost/api/patients?per_page=2\")",
-      "Bash(docker exec memedics-api-laravel.test-1 php artisan tinker '--execute= *)"
+      "Bash(docker exec memedics-api-laravel.test-1 php artisan tinker '--execute= *)",
+      "Bash(ls /mnt/c/Users/Robson/Desktop/frontend-web/memedics-web 2>/dev/null || echo \"FRONT NAO ACESSIVEL\")",
+      "Bash(php -l /home/masterdba6/projetos/memedics-api/app/Http/Resources/UnitAddressResource.php)",
+      "Bash(php -l /home/masterdba6/projetos/memedics-api/app/Models/UnitAddress.php)",
+      "Bash(php -l /home/masterdba6/projetos/memedics-api/app/Http/Controllers/EvolutionGoController.php)",
+      "Bash(./node_modules/.bin/tsc --noEmit)",
+      "Read(//home/masterdba6/.nvm/versions/**)",
+      "Read(//usr/local/bin/**)",
+      "Bash(\"/mnt/c/Program Files/nodejs/node.exe\" node_modules/typescript/lib/tsc.js --noEmit)",
+      "Bash(echo \"exit: $?\")",
+      "Bash(echo \"exit grep: $?\")",
+      "Bash(php -l /home/masterdba6/projetos/memedics-api/app/Providers/AuthServiceProvider.php)",
+      "Bash(php -l /home/masterdba6/projetos/memedics-api/routes/api.php)",
+      "Bash(php /home/masterdba6/projetos/memedics-api/artisan route:list --path=evolution)",
+      "Bash(echo \"grep exit: $?\")",
+      "Bash(php -l /home/masterdba6/projetos/memedics-api/app/Services/EvolutionGoService.php)",
+      "Bash(curl -s -m 10 -H \"apikey: Y65FzwPcTGChNw8JHTNUuY3QO8mXgJ43BkPOdVbxpuDmc9KoSWywsJ2D86Zi4QMm\" https://evogo.memedics.com.br/instance/all)",
+      "Bash(curl -s -m 10 -H \"apikey: d84fb4c2-38f9-47d1-a518-7dd65a3dac5d\" https://evogo.memedics.com.br/instance/qr)",
+      "Bash(curl -s -m 10 -H \"apikey: d84fb4c2-38f9-47d1-a518-7dd65a3dac5d\" https://evogo.memedics.com.br/instance/status)"
     ]
   }
 }

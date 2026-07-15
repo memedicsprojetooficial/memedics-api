@@ -28,6 +28,10 @@ class UnitAddress extends Model
         'evolution_token',
     ];
 
+    protected $hidden = [
+        'evolution_token',
+    ];
+
     public function company(): BelongsTo
     {
         return $this->belongsTo(Company::class);

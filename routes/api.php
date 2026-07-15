@@ -202,7 +202,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('cids', [CIDController::class, 'index']);
 
     // ── Evolution Go (WhatsApp) ───────────────────────────────────────────────
-    Route::prefix('evolution')->group(function () {
+    Route::prefix('evolution')->middleware('can:manage-whatsapp')->group(function () {
         // Listagem global
         Route::get('/', [EvolutionGoController::class, 'index']);
 

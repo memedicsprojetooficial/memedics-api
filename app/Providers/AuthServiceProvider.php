@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Models\User;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Gate;
 
@@ -25,6 +26,7 @@ class AuthServiceProvider extends ServiceProvider
     {
         $this->registerPolicies();
 
-        //
+        // Gestão das instâncias de WhatsApp (Evolution Go) é restrita a administradores.
+        Gate::define('manage-whatsapp', fn (User $user) => (bool) $user->admin);
     }
 }
