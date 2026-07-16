@@ -172,7 +172,10 @@
       "Bash(php -l /home/masterdba6/projetos/memedics-api/app/Services/EvolutionGoService.php)",
       "Bash(curl -s -m 10 -H \"apikey: Y65FzwPcTGChNw8JHTNUuY3QO8mXgJ43BkPOdVbxpuDmc9KoSWywsJ2D86Zi4QMm\" https://evogo.memedics.com.br/instance/all)",
       "Bash(curl -s -m 10 -H \"apikey: d84fb4c2-38f9-47d1-a518-7dd65a3dac5d\" https://evogo.memedics.com.br/instance/qr)",
-      "Bash(curl -s -m 10 -H \"apikey: d84fb4c2-38f9-47d1-a518-7dd65a3dac5d\" https://evogo.memedics.com.br/instance/status)"
+      "Bash(curl -s -m 10 -H \"apikey: d84fb4c2-38f9-47d1-a518-7dd65a3dac5d\" https://evogo.memedics.com.br/instance/status)",
+      "Bash(\"/mnt/c/Program Files/nodejs/node.exe\" -e \"const s=require\\('sharp'\\); s\\('public/icons/icon-512.jpg'\\).metadata\\(\\).then\\(m=>console.log\\(m.width, m.height, m.format\\)\\)\")",
+      "Bash(\"/mnt/c/Program Files/nodejs/node.exe\" generate-pwa-icons.cjs)",
+      "Bash(cp /mnt/c/Users/Robson/Desktop/frontend-web/memedics-web/public/icons/pwa-64x64-v2.png /mnt/c/Users/Robson/Desktop/frontend-web/memedics-web/src/assets/pwa-64x64.png)"
     ]
   }
 }
