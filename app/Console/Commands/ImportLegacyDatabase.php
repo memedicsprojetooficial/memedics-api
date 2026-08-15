@@ -13,19 +13,22 @@ class ImportLegacyDatabase extends Command
     protected $description = 'Importa os dados do banco legado (clava_legacy) para o schema atual, preservando os IDs originais';
 
     /**
+     * IDs dos médicos inativos, replicados da migration 2026_05_19_120100_soft_delete_inactive_doctors,
+     * que roda antes dos dados existirem e por isso não tem efeito durante a migração.
+     */
+    private const INACTIVE_DOCTOR_IDS = [4, 32, 89, 90, 91, 6, 7, 10, 12, 13, 15, 16, 17, 18, 19, 20, 21, 23, 24, 25, 27, 28, 29, 30, 31, 33, 34, 38, 39, 40, 41, 43, 42, 44, 45, 46, 48, 49, 50, 51, 52, 54, 56, 57, 58, 59, 62, 63, 65, 67, 69, 71, 72, 73, 74, 77, 80];
+
+    /**
+     * `specialties` e `councils` ficam de fora de propósito: vêm dos seeders, que trazem as mesmas
+     * chaves do legado mais as colunas novas (`actuation` e `description`). Ver LegacySetup.
+     *
      * Ordem de importação respeitando dependências de FK.
      * Cada entrada: tabela => [colunas do destino => expressão SQL de origem].
      * Colunas ausentes aqui simplesmente não são preenchidas (ficam NULL/default).
      */
     private const TABLES = [
-        'specialties' => [
-            'id' => 'id', 'name' => 'name', 'created_at' => 'created_at', 'updated_at' => 'updated_at',
-        ],
-        'councils' => [
-            'id' => 'id', 'council_name' => 'council_name', 'created_at' => 'created_at', 'updated_at' => 'updated_at',
-        ],
         'plans' => [
-            'id' => 'id', 'old_id' => 'id', 'name' => 'name', 'created_at' => 'created_at', 'updated_at' => 'updated_at',
+            'id' => 'id', 'old_id' => 'old_id', 'name' => 'name', 'created_at' => 'created_at', 'updated_at' => 'updated_at',
         ],
         'users' => [
             'id' => 'id', 'name' => 'name', 'email' => 'email', 'email_verified_at' => 'email_verified_at',
@@ -39,12 +42,12 @@ class ImportLegacyDatabase extends Command
             'created_at' => 'created_at', 'updated_at' => 'updated_at',
         ],
         'doctors' => [
-            'id' => 'id', 'old_id' => 'id', 'unit_addresses_id' => 'unit_addresses_id', 'cpf' => 'cpf',
+            'id' => 'id', 'old_id' => 'old_id', 'unit_addresses_id' => 'unit_addresses_id', 'cpf' => 'cpf',
             'council_type' => 'council_type', 'council_number' => 'council_number', 'specialty_id' => 'specialty_id',
             'created_at' => 'created_at', 'updated_at' => 'updated_at',
         ],
         'patients' => [
-            'id' => 'id', 'old_id' => 'id', 'name' => 'name', 'birthday' => 'birthday', 'gender' => 'gender',
+            'id' => 'id', 'old_id' => 'old_id', 'name' => 'name', 'birthday' => 'birthday', 'gender' => 'gender',
             'document' => 'document', 'phone' => 'phone', 'phone2' => 'phone2', 'email' => 'email',
             'created_at' => 'created_at', 'updated_at' => 'updated_at', 'deleted_at' => 'deleted_at',
         ],
@@ -54,7 +57,7 @@ class ImportLegacyDatabase extends Command
             'patient_id' => 'patient_id', 'created_at' => 'created_at', 'updated_at' => 'updated_at',
         ],
         'cid' => [
-            'id' => 'id', 'old_id' => 'id', 'description' => 'description', 'code' => 'code',
+            'id' => 'id', 'old_id' => 'old_id', 'description' => 'description', 'code' => 'code',
             'created_at' => 'created_at', 'updated_at' => 'updated_at',
         ],
         'appointments' => [
@@ -76,16 +79,16 @@ class ImportLegacyDatabase extends Command
             'created_at' => 'created_at', 'updated_at' => 'updated_at', 'deleted_at' => 'deleted_at',
         ],
         'medical_reports' => [
-            'id' => 'id', 'old_id' => 'id', 'appointment_id' => 'appointment_id', 'date' => 'date', 'time' => 'time',
+            'id' => 'id', 'old_id' => 'old_id', 'appointment_id' => 'appointment_id', 'date' => 'date', 'time' => 'time',
             'duration' => 'duration', 'status' => 'status', 'doctor_id' => 'doctor_id', 'patient_id' => 'patient_id',
             'created_at' => 'created_at', 'updated_at' => 'updated_at',
         ],
         'report_tabs' => [
-            'id' => 'id', 'old_id' => 'id', 'name' => 'name', 'doctor_id' => 'doctor_id',
+            'id' => 'id', 'old_id' => 'old_id', 'name' => 'name', 'doctor_id' => 'doctor_id',
             'created_at' => 'created_at', 'updated_at' => 'updated_at',
         ],
         'report_fields' => [
-            'id' => 'id', 'old_id' => 'id', 'name' => 'name', 'type' => 'type', 'columns' => 'columns',
+            'id' => 'id', 'old_id' => 'old_id', 'name' => 'name', 'type' => 'type', 'columns' => 'columns',
             'report_tab_id' => 'report_tab_id', 'hidden' => 'hidden',
             'created_at' => 'created_at', 'updated_at' => 'updated_at',
         ],
@@ -143,8 +146,54 @@ class ImportLegacyDatabase extends Command
         }
 
         $this->newLine();
-        $this->info('Import concluído.');
         $this->table(['Tabela', 'Linhas importadas'], $summary);
+
+        $this->softDeleteInactiveDoctors();
+
+        return $this->verify();
+    }
+
+    /**
+     * A migration que marca os médicos inativos roda com o banco ainda vazio,
+     * então o soft delete precisa ser reaplicado depois que os dados chegam.
+     */
+    private function softDeleteInactiveDoctors(): void
+    {
+        $affected = DB::table('doctors')
+            ->whereIn('id', self::INACTIVE_DOCTOR_IDS)
+            ->whereNull('deleted_at')
+            ->update(['deleted_at' => now()]);
+
+        $this->info("Médicos inativos marcados como excluídos: {$affected}");
+    }
+
+    /**
+     * Confere linha a linha se o destino recebeu tudo o que existia na origem.
+     */
+    private function verify(): int
+    {
+        $rows = [];
+        $ok = true;
+
+        foreach (array_merge(['unit_addresses' => []], self::TABLES) as $table => $columns) {
+            $source = DB::connection('legacy')->table($table)->count();
+            $dest = DB::table($table)->count();
+            $matches = $source === $dest;
+            $ok = $ok && $matches;
+
+            $rows[] = [$table, $source, $dest, $matches ? 'OK' : 'DIVERGENTE'];
+        }
+
+        $this->newLine();
+        $this->table(['Tabela', 'Origem', 'Destino', 'Conferência'], $rows);
+
+        if (!$ok) {
+            $this->error('Import concluído com divergências de contagem. Verifique as tabelas marcadas acima.');
+
+            return self::FAILURE;
+        }
+
+        $this->info('Import concluído e conferido: todas as tabelas batem com a origem.');
 
         return self::SUCCESS;
     }

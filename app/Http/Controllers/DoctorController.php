@@ -116,7 +116,7 @@ class DoctorController extends Controller
     {
         $input = $request->validate([
             'name' => ['sometimes', 'string', 'min:3', 'max:255'],
-            'company_name' => ['sometimes', 'string', 'min:3', 'max:255'],
+            'company_name' => ['sometimes', 'nullable', 'string', 'min:3', 'max:255'],
             'email' => ['sometimes', 'string', 'max:255', 'email', Rule::unique('users')->ignore($doctor->user->id)],
             'admin' => ['sometimes', 'boolean'],
             'cpf' => ['sometimes', 'string', 'max:255', Rule::unique('doctors')->ignore($doctor->id)],
