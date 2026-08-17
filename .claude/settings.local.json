@@ -201,7 +201,17 @@
       "Bash(curl -s -o /tmp/p3.json -w 'HTTP %{http_code}\\\\n' -m 25 -X PUT -H 'Authorization: Bearer __TRACKED_VAR__' -H 'Content-Type: application/json' -H 'Accept: application/json' -d '{\"company_name\":\"\"}' http://localhost/api/doctors/2)",
       "Bash(sed -i \"s/'company_name' => \\\\['sometimes', 'nullable', 'string'/'company_name' => ['sometimes', 'string'/\" app/Http/Controllers/DoctorController.php)",
       "Bash(curl -s -o /tmp/p4.json -w 'HTTP %{http_code}\\\\n' -m 25 -X PUT -H 'Authorization: Bearer __TRACKED_VAR__' -H 'Content-Type: application/json' -H 'Accept: application/json' -d '{\"company_name\":\"\"}' http://localhost/api/doctors/2)",
-      "Bash(sed -i \"s/'company_name' => \\\\['sometimes', 'string'/'company_name' => ['sometimes', 'nullable', 'string'/\" app/Http/Controllers/DoctorController.php)"
+      "Bash(sed -i \"s/'company_name' => \\\\['sometimes', 'string'/'company_name' => ['sometimes', 'nullable', 'string'/\" app/Http/Controllers/DoctorController.php)",
+      "Bash(curl -s -o /tmp/c2.json -w 'HTTP %{http_code}\\\\n' -m 25 -X POST -H 'Authorization: Bearer __TRACKED_VAR__' -H 'Content-Type: application/json' -H 'Accept: application/json' -d '{\"name\":\"Segundo Paciente Sem CPF\",\"phone\":\"21988887777\",\"email\":\"\",\"document\":\"\",\"birthday\":\"\"}' http://localhost/api/patients)",
+      "Bash(curl -s -o /tmp/c3.json -w 'HTTP %{http_code} ' -m 25 -X POST -H 'Authorization: Bearer __TRACKED_VAR__' -H 'Content-Type: application/json' -H 'Accept: application/json' -d '{\"name\":\"ab\"}' http://localhost/api/patients)",
+      "Bash(curl -s -m 25 -H 'Authorization: Bearer __TRACKED_VAR__' -H 'Accept: application/json' http://localhost/api/patients?search=Cadastro%20R%C3%A1pido)",
+      "Bash(grep -n -B3 -A18 \"appointments/\\\\${\")",
+      "Bash(docker exec memedics-api-mysql-1 mysql -usail -ppassword -N clava -e ' *)",
+      "Bash(grep -v \"^--$\")",
+      "Bash('/mnt/c/Program Files/nodejs/node.exe' -e ' *)",
+      "Bash(docker exec memedics-api-mysql-1 mysql -usail -ppassword --default-character-set=utf8mb4 -N clava -e ' *)",
+      "Bash(grep -n \"unmaskDoc\\\\|export const unmask\\\\|export function unmask\" /mnt/c/Users/Robson/Desktop/frontend-web/memedics-web/src/lib/masks.ts /mnt/c/Users/Robson/Desktop/frontend-web/memedics-web/src/lib/formatters.ts /mnt/c/Users/Robson/Desktop/frontend-web/memedics-web/src/routes/_authenticated/doctor.\\\\$doctorId.tsx 2>/dev/null)",
+      "Bash(grep -n \"cpf\\\\|maskCpfCnpj\\\\|unmask\" /mnt/c/Users/Robson/Desktop/frontend-web/memedics-web/src/routes/_authenticated/patient-records.\\\\$patientId.tsx)"
     ]
   }
 }

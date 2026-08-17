@@ -86,6 +86,10 @@ class DoctorController extends Controller
             'council_type' => ['required', 'string', 'max:255'],
             'council_number' => ['required', 'string', 'max:255', 'unique:doctors'],
             'specialty_id' => ['required', 'exists:specialties,id']
+        ], [
+            'email.unique' => 'Este e-mail já está cadastrado.',
+            'cpf.unique' => 'Este CPF já está cadastrado para outro médico.',
+            'council_number.unique' => 'Este número de conselho já está cadastrado para outro médico.',
         ]);
 
         $doctor = Doctor::create($input);
@@ -125,6 +129,10 @@ class DoctorController extends Controller
             'council_number' => ['sometimes', 'string', 'max:255', Rule::unique('doctors')->ignore($doctor->id)],
             'specialty_id' => ['sometimes', 'exists:specialties,id'],
             'unit_addresses_id' => ['sometimes', 'integer', 'numeric']
+        ], [
+            'email.unique' => 'Este e-mail já está cadastrado.',
+            'cpf.unique' => 'Este CPF já está cadastrado para outro médico.',
+            'council_number.unique' => 'Este número de conselho já está cadastrado para outro médico.',
         ]);
 
         $doctor->update($input);

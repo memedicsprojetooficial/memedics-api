@@ -81,6 +81,8 @@ class PatientController extends Controller
             'phone2' => ['nullable', 'string', 'max:255'],
             'email' => ['nullable', 'string', 'max:255', 'email'],
             'plan_id' => ['nullable', 'exists:plans,id'],
+        ], [
+            'document.unique' => 'Este CPF/CNPJ já está cadastrado para outro paciente.',
         ]);
 
         $patient = Patient::create($input);
@@ -117,6 +119,8 @@ class PatientController extends Controller
             'phone2' => ['sometimes', 'nullable', 'string', 'max:255'],
             'email' => ['sometimes', 'nullable', 'string', 'max:255', 'email'],
             'plan_id' => ['sometimes', 'nullable', 'exists:plans,id'],
+        ], [
+            'document.unique' => 'Este CPF/CNPJ já está cadastrado para outro paciente.',
         ]);
 
         $patient->update($input);

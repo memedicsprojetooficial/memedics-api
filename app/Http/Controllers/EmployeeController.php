@@ -47,6 +47,8 @@ class EmployeeController extends Controller
             'password' => ['required', 'string', 'max:255'],
             'admin' => ['required', 'boolean'],
             'access_all_schedules' => ['required', 'boolean']
+        ], [
+            'email.unique' => 'Este e-mail já está cadastrado.',
         ]);
 
         $employee = Employee::create($input);
@@ -64,6 +66,8 @@ class EmployeeController extends Controller
             'email' => ['required', 'string', 'max:255', 'email', Rule::unique('users')->ignore($employee->user->id)],
             'admin' => ['required', 'boolean'],
             'access_all_schedules' => ['required', 'boolean']
+        ], [
+            'email.unique' => 'Este e-mail já está cadastrado.',
         ]);
 
         $employee->update($input);
