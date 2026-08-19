@@ -85,7 +85,8 @@ class DoctorController extends Controller
             'phone' => ['string', 'max:255'],
             'council_type' => ['required', 'string', 'max:255'],
             'council_number' => ['required', 'string', 'max:255', 'unique:doctors'],
-            'specialty_id' => ['required', 'exists:specialties,id']
+            'specialty_id' => ['required', 'exists:specialties,id'],
+            'show_in_bot' => ['sometimes', 'boolean'],
         ], [
             'email.unique' => 'Este e-mail já está cadastrado.',
             'cpf.unique' => 'Este CPF já está cadastrado para outro médico.',
@@ -128,7 +129,8 @@ class DoctorController extends Controller
             'council_type' => ['sometimes', 'string', 'max:255'],
             'council_number' => ['sometimes', 'string', 'max:255', Rule::unique('doctors')->ignore($doctor->id)],
             'specialty_id' => ['sometimes', 'exists:specialties,id'],
-            'unit_addresses_id' => ['sometimes', 'integer', 'numeric']
+            'unit_addresses_id' => ['sometimes', 'integer', 'numeric'],
+            'show_in_bot' => ['sometimes', 'boolean'],
         ], [
             'email.unique' => 'Este e-mail já está cadastrado.',
             'cpf.unique' => 'Este CPF já está cadastrado para outro médico.',

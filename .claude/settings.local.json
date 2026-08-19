@@ -215,7 +215,10 @@
       "Bash(curl -s -o /tmp/qc1.json -w 'HTTP %{http_code}\\\\n' -m 20 -X POST -H 'Authorization: Bearer __TRACKED_VAR__' -H 'Content-Type: application/json' -H 'Accept: application/json' -d '{\"name\":\"Teste Cadastro Rapido CPF\",\"phone\":\"21999991111\",\"document\":\"__TRACKED_VAR__\"}' http://localhost/api/patients)",
       "Bash(curl -s -o /tmp/qc2.json -w 'HTTP %{http_code}\\\\n' -m 20 -X POST -H 'Authorization: Bearer __TRACKED_VAR__' -H 'Content-Type: application/json' -H 'Accept: application/json' -d '{\"name\":\"Teste Cadastro Rapido CPF Novo\",\"phone\":\"21999992222\",\"document\":\"52998224725\"}' http://localhost/api/patients)",
       "Bash(curl -s -o /tmp/qc3.json -w 'HTTP %{http_code}\\\\n' -m 20 -X POST -H 'Authorization: Bearer __TRACKED_VAR__' -H 'Content-Type: application/json' -H 'Accept: application/json' -d '{\"name\":\"Teste Cadastro Rapido Sem CPF\",\"phone\":\"21999993333\"}' http://localhost/api/patients)",
-      "Bash(php -l /home/masterdba6/projetos/memedics-api/app/Http/Controllers/AppointmentController.php)"
+      "Bash(php -l /home/masterdba6/projetos/memedics-api/app/Http/Controllers/AppointmentController.php)",
+      "Bash(grep -n \"from \\\\\"lucide-react\\\\\"\" /mnt/c/Users/Robson/Desktop/frontend-web/memedics-web/src/routes/_authenticated/doctor.\\\\$doctorId.tsx)",
+      "Bash(grep -n \"Switch\" /mnt/c/Users/Robson/Desktop/frontend-web/memedics-web/src/routes/_authenticated/doctor.\\\\$doctorId.tsx | head -3)",
+      "Bash(grep -E 'doctor\\\\.\\\\$doctorId|lib/api\\\\.ts|lib/types\\\\.ts')"
     ]
   }
 }

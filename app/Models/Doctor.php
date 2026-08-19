@@ -26,6 +26,11 @@ class Doctor extends Model
         'council_type',
         'council_number',
         'specialty_id',
+        'show_in_bot',
+    ];
+
+    protected $casts = [
+        'show_in_bot' => 'boolean',
     ];
 
     /**

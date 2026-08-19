@@ -28,6 +28,8 @@ class BotController extends Controller
         ]);
 
         $specialties = Specialty::whereHas('doctors', function ($q) use ($request) {
+            $q->where('show_in_bot', true);
+
             if ($request->filled('unit_address_id')) {
                 $q->where('unit_addresses_id', $request->query('unit_address_id'));
             }
@@ -50,6 +52,7 @@ class BotController extends Controller
         // Busca por ID específico
         if ($request->filled('doctor_id')) {
             $doctor = Doctor::with(['user', 'specialty', 'plans', 'workTimes', 'information'])
+                ->where('show_in_bot', true)
                 ->findOrFail($request->query('doctor_id'));
 
             return response()->json([
@@ -87,6 +90,7 @@ class BotController extends Controller
         // Listagem por especialidade
         $doctors = Doctor::with('user')
             ->where('specialty_id', $request->query('specialty_id'))
+            ->where('show_in_bot', true)
             ->orderBy('id')
             ->get();
 

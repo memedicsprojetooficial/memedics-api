@@ -33,6 +33,7 @@ class DoctorResource extends JsonResource
             'council_type' => $this->council_type,
             'council_number' => $this->council_number,
             'unit_addresses_id' => $this->unit_addresses_id,
+            'show_in_bot' => $this->show_in_bot,
             'work_times' => WorkTimeResource::collection($this->workTimes),
             'plans' => DoctorPlanResource::collection($this->plans),
             'information' => $this->when(
