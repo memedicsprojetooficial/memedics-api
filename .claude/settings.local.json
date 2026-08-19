@@ -211,7 +211,11 @@
       "Bash('/mnt/c/Program Files/nodejs/node.exe' -e ' *)",
       "Bash(docker exec memedics-api-mysql-1 mysql -usail -ppassword --default-character-set=utf8mb4 -N clava -e ' *)",
       "Bash(grep -n \"unmaskDoc\\\\|export const unmask\\\\|export function unmask\" /mnt/c/Users/Robson/Desktop/frontend-web/memedics-web/src/lib/masks.ts /mnt/c/Users/Robson/Desktop/frontend-web/memedics-web/src/lib/formatters.ts /mnt/c/Users/Robson/Desktop/frontend-web/memedics-web/src/routes/_authenticated/doctor.\\\\$doctorId.tsx 2>/dev/null)",
-      "Bash(grep -n \"cpf\\\\|maskCpfCnpj\\\\|unmask\" /mnt/c/Users/Robson/Desktop/frontend-web/memedics-web/src/routes/_authenticated/patient-records.\\\\$patientId.tsx)"
+      "Bash(grep -n \"cpf\\\\|maskCpfCnpj\\\\|unmask\" /mnt/c/Users/Robson/Desktop/frontend-web/memedics-web/src/routes/_authenticated/patient-records.\\\\$patientId.tsx)",
+      "Bash(curl -s -o /tmp/qc1.json -w 'HTTP %{http_code}\\\\n' -m 20 -X POST -H 'Authorization: Bearer __TRACKED_VAR__' -H 'Content-Type: application/json' -H 'Accept: application/json' -d '{\"name\":\"Teste Cadastro Rapido CPF\",\"phone\":\"21999991111\",\"document\":\"__TRACKED_VAR__\"}' http://localhost/api/patients)",
+      "Bash(curl -s -o /tmp/qc2.json -w 'HTTP %{http_code}\\\\n' -m 20 -X POST -H 'Authorization: Bearer __TRACKED_VAR__' -H 'Content-Type: application/json' -H 'Accept: application/json' -d '{\"name\":\"Teste Cadastro Rapido CPF Novo\",\"phone\":\"21999992222\",\"document\":\"52998224725\"}' http://localhost/api/patients)",
+      "Bash(curl -s -o /tmp/qc3.json -w 'HTTP %{http_code}\\\\n' -m 20 -X POST -H 'Authorization: Bearer __TRACKED_VAR__' -H 'Content-Type: application/json' -H 'Accept: application/json' -d '{\"name\":\"Teste Cadastro Rapido Sem CPF\",\"phone\":\"21999993333\"}' http://localhost/api/patients)",
+      "Bash(php -l /home/masterdba6/projetos/memedics-api/app/Http/Controllers/AppointmentController.php)"
     ]
   }
 }
