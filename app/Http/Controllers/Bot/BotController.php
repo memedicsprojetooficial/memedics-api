@@ -233,7 +233,7 @@ class BotController extends Controller
             'duration'   => ['nullable', 'string', 'date_format:H:i'],
             'patient_id' => ['required', 'exists:patients,id'],
             'plan_id'    => ['required', 'exists:plans,id'],
-            'type'       => ['required', 'string', 'in:first,default,return,free'],
+            'type'       => ['required', 'string', 'in:first,default,return,free,online,medical-fitting,procedure,exam'],
             'comment'    => ['nullable', 'string', 'max:255'],
             'user_id'   => ['required', 'exists:users,id'],
         ]);

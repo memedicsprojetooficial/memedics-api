@@ -8,6 +8,7 @@ use App\Models\Address;
 use App\Models\Appointment;
 use App\Models\Event;
 use App\Models\Patient;
+use App\Rules\CpfOuCnpj;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -69,7 +70,7 @@ class PatientController extends Controller
             'name' => ['required', 'string', 'min:3', 'max:255'],
             'birthday' => ['nullable', 'string', 'date_format:Y-m-d'],
             'gender' => ['nullable', 'string', 'in:female,male'],
-            'document' => ['nullable', 'string', 'max:255', 'unique:patients'],
+            'document' => ['nullable', 'string', 'max:255', 'unique:patients', new CpfOuCnpj()],
             'address.street' => ['nullable', 'string', 'max:255'],
             'address.number' => ['nullable', 'string', 'max:255'],
             'address.complementary' => ['nullable', 'string', 'max:255'],
@@ -103,11 +104,22 @@ class PatientController extends Controller
      */
     public function update(Patient $patient, Request $request): PatientResource
     {
+        $documentRules = ['sometimes', 'nullable', 'string', 'max:255', Rule::unique('patients')->ignore($patient->id)];
+
+        // Só exige dígito verificador válido quando o documento está de fato sendo
+        // alterado — muitos registros antigos (importados) têm CPF/CNPJ inválido,
+        // e isso não pode bloquear a edição de outros campos desses cadastros.
+        $incomingDocument = $request->input('document');
+        if ($incomingDocument !== null
+            && preg_replace('/\D/', '', $incomingDocument) !== preg_replace('/\D/', '', (string) $patient->document)) {
+            $documentRules[] = new CpfOuCnpj();
+        }
+
         $input = $request->validate([
             'name' => ['sometimes', 'string', 'min:3', 'max:255'],
             'birthday' => ['sometimes', 'nullable', 'string', 'date_format:Y-m-d'],
             'gender' => ['sometimes', 'nullable', 'string', 'in:female,male'],
-            'document' => ['sometimes', 'nullable', 'string', 'max:255', Rule::unique('patients')->ignore($patient->id)],
+            'document' => $documentRules,
             'address.street' => ['nullable', 'string', 'max:255'],
             'address.number' => ['nullable', 'string', 'max:255'],
             'address.complementary' => ['nullable', 'string', 'max:255'],

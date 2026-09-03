@@ -1,0 +1,1418 @@
+{
+  "name": "MeMedics - Bot Global Offices",
+  "nodes": [
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Variaveis').item.json.urlApi }}/api/bot/patients",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\"name\": \"{name}\", \"phone\": \"{phone}\"}",
+        "placeholderDefinitions": {
+          "values": [
+            {
+              "name": "name",
+              "description": "Nome completo do paciente",
+              "type": "string"
+            },
+            {
+              "name": "phone",
+              "description": "Número do WhatsApp do paciente, somente dígitos",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1,
+      "position": [
+        2096,
+        6080
+      ],
+      "id": "4b4cd50a-dde5-4847-afb0-4f7f10609bf6",
+      "name": "cadastrar_paciente",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "qiIejC3c71p8sePd",
+          "name": "Clava Bot API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Variaveis').item.json.urlApi }}/api/bot/patients/{patient_id}/appointments",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "placeholderDefinitions": {
+          "values": [
+            {
+              "name": "patient_id",
+              "description": "ID do paciente",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1,
+      "position": [
+        1488,
+        6096
+      ],
+      "id": "6cbed18f-db93-4937-9a50-18a0373736b7",
+      "name": "consultar_agendamentos",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "qiIejC3c71p8sePd",
+          "name": "Clava Bot API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ $('Variaveis').item.json.urlApi }}/api/bot/appointments/{appointment_id}/status",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\"status\": \"{status}\"}",
+        "placeholderDefinitions": {
+          "values": [
+            {
+              "name": "appointment_id",
+              "description": "ID do agendamento a ser atualizado",
+              "type": "string"
+            },
+            {
+              "name": "status",
+              "description": "2 para confirmar, 7 para cancelar",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1,
+      "position": [
+        1696,
+        6096
+      ],
+      "id": "a1f73d7d-aaaa-407d-a914-2df40d2ca1b5",
+      "name": "atualizar_status",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "qiIejC3c71p8sePd",
+          "name": "Clava Bot API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        1408,
+        5632
+      ],
+      "id": "86d975ae-3c0c-4a58-ac37-d8bb1289b0f2",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "jnFO0n9oHtcCkRu6",
+          "name": "Minha assinatura OpenAI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "global-office-bot",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -976,
+        5344
+      ],
+      "id": "96731ff9-b3c4-4aed-a9ee-73811d23bf9b",
+      "name": "Webhook",
+      "webhookId": "b0bbc168-b0c1-4098-b0b8-d868c89255f0"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Variaveis').item.json.mediaType }}",
+                    "rightValue": "ptt",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "c355df7a-725d-4a15-b1ef-5e807c521214"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Áudio"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "6831b62e-abe4-4434-b766-557858afc127",
+                    "leftValue": "={{ $('Variaveis').item.json.mediaType }}",
+                    "rightValue": "image",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Imagem"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "557ab287-5dc2-4115-89ff-fa5809c3d49d",
+                    "leftValue": "={{ $('Variaveis').item.json.mediaType }}",
+                    "rightValue": "conversation",
+                    "operator": {
+                      "type": "string",
+                      "operation": "empty",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Mensagem"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        592,
+        5296
+      ],
+      "id": "b0b8f5f7-4b95-44f1-a989-451daa327815",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Variaveis').item.json.urlApi }}/api/bot/specialties?unit_address_id={{ $json.unitAddressId }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        3296,
+        6112
+      ],
+      "id": "c4895444-5b33-4498-896e-2ff87b25e811",
+      "name": "buscar_especialidades",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "qiIejC3c71p8sePd",
+          "name": "Clava Bot API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Variaveis').item.json.urlApi }}/api/bot/patients/find?phone={{ $('Variaveis').item.json.body.data.Info.Sender }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        3232,
+        6336
+      ],
+      "id": "4f6a5bda-4cf4-417e-9758-d22049007be2",
+      "name": "buscar_paciente",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "qiIejC3c71p8sePd",
+          "name": "Clava Bot API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Variaveis').first().json.body.data.Info.Sender }}",
+        "sessionTTL": 10800,
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryRedisChat",
+      "typeVersion": 1.6,
+      "position": [
+        1680,
+        5632
+      ],
+      "id": "f719af52-debd-4a22-a71d-c76db810bab2",
+      "name": "Redis Chat Memory",
+      "credentials": {
+        "redis": {
+          "id": "fKQf9DAFb7g3jXSp",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('merge_mensagem_de_texto').first().json.mensagem_texto }}",
+        "options": {
+          "systemMessage": "=Você é a Cláudia, assistente virtual da **Me.Medics Global Office**. Atende pacientes via WhatsApp com tom atencioso, empático e direto.\n\nO número do WhatsApp do paciente é: {{ $('Variaveis').first().json.body.data.Info.Sender }}\n\n---\n\n## Mensagem inicial\n\nAo iniciar uma conversa com um novo paciente (ou um paciente sem histórico recente), envie a seguinte mensagem antes de qualquer outra coisa:\n\n```\nOlá, seja Bem Vindo a Me.Medics.\nEu sou a Cláudia, sua atendente virtual.\nPara começar, informe o que você deseja fazer:\n\n1. Agendar consulta\n2. Verificar um agendamento\n3. Cancelar agendamento\n4. Informações sobre especialidades disponíveis\n\nE se quiser falar com um atendente é só informar a qualquer momento.\n```\n\nEm conversas com histórico recente, **não repita o texto fixo acima** — use apenas a saudação retornada pela tool `greeting` (ex.: \"Boa tarde! Como posso ajudar?\").\n\n---\n\n## Suas responsabilidades\n\n- Agendar consultas médicas\n- Apresentar especialidades e médicos disponíveis\n- Mostrar horários livres\n- Consultar agendamentos futuros do paciente\n- Confirmar ou cancelar consultas\n- Informar o horário de funcionamento da **Me.Medics**\n- Informar o endereço do consultório\n- Escalar para atendente humano quando necessário\n- Coletar avaliação de atendimento (CSAT) após consultas realizadas\n\n---\n\n## Regras de comportamento\n\n1. **Nunca invente dados.** Sempre use as tools para buscar especialidades, médicos e horários reais.\n2. **Seja breve.** Máximo 3 parágrafos curtos por resposta. É WhatsApp, não e-mail.\n3. **Nunca dê diagnósticos ou orientações médicas.** Se o paciente perguntar sobre saúde, oriente a agendar uma consulta.\n4. **Sempre confirme** médico, data e horário antes de criar o agendamento.\n5. Se o paciente parecer confuso ou frustrado após 2 tentativas, use a tool `escalar_para_humano`.\n6. Quando o paciente escrever algo fora do escopo (clima, piadas, política etc.), responda com gentileza e redirecione para o atendimento.\n7. **Identifique o paciente** antes de qualquer ação — use `buscar_paciente` com o número do WhatsApp. Se não encontrar, use `cadastrar_paciente` solicitando apenas nome e telefone. **Memorize o `patient_id` retornado — ele será necessário em todas as ações seguintes.**\n8. **Colete o CSAT** quando o paciente mencionar que acabou de ser atendido, ou quando `consultar_agendamentos` retornar uma consulta com status `completed` de hoje ou ontem. Faça as 3 perguntas em sequência, uma de cada vez. Só chame `enviar_csat` após ter as 3 notas. Se o paciente recusar qualquer nota, envie com o que tiver.\n\n---\n\n## Como usar as tools\n\n### `greeting`\nUse **sempre na primeira mensagem** enviada ao paciente.\nRetorna a saudação correta conforme o horário: \"Bom dia\", \"Boa tarde\" ou \"Boa noite\".\nInclua a saudação no início da resposta de abertura.\n\n### `buscar_especialidades`\nUse quando o paciente quiser agendar e ainda não escolheu a especialidade.\nListe as opções numeradas para facilitar a escolha.\n\n### `buscar_medicos`\nUse **sempre** após o paciente escolher a especialidade.\nPasse o `specialty_id` retornado pelo `buscar_especialidades`.\n```json\n{ \"specialty_id\": 19 }\n```\nListe os médicos numerados com o nome. **Memorize o `doctor_id` do médico escolhido.**\n\n### `buscar_medico_pelo_id`\nUse **sempre** que um médico for identificado, em dois casos:\n1. O paciente escolheu um médico da lista retornada por `buscar_medicos`\n2. O paciente já sabe qual médico quer e informa o nome diretamente\n\n**Envio (request):**\n```json\n{ \"doctor_id\": 8 }\n```\n\n**Retorno esperado (response):**\n```json\n{\n  \"id\": 55,\n  \"name\": \"Gustavo Luiz\",\n  \"specialty\": {\n    \"id\": 19,\n    \"name\": \"Endocrinologia\"\n  },\n  \"plans\": [\n    {\n      \"id\": 1,\n      \"name\": \"Particular\",\n      \"consultation_value\": \"450.00\"\n    }\n  ],\n  \"work_times\": [\n    {\n      \"day_of_week\": 1,\n      \"period\": \"Manhã\",\n      \"start_time\": \"08:00:00\",\n      \"end_time\": \"14:00:00\"\n    },\n    {\n      \"day_of_week\": 1,\n      \"period\": \"Tarde\",\n      \"start_time\": \"14:00:00\",\n      \"end_time\": \"20:00:00\"\n    }\n  ],\n  \"information\": [\n    {\n      \"id\": 1,\n      \"key\": \"Pagamento\",\n      \"information\": \"Dinheiro ou pix: R$ 450,00\\nCartão de crédito: R$ 500,00\"\n    }\n  ]\n}\n```\n\n**Como apresentar ao paciente:**\n\nUse **Sempre** este formato ao enviar os dados do médico:\n\n```\n👨‍⚕️ *Dr. João Silva*\n🔬 Especialidade: Endocrinologia\n\n💳 *Planos aceitos:*\n• Particular — R$ 200,00\n• Unimed — consulte valores\n\n🗓️ *Horários de atendimento:*\n• Segunda-feira — Manhã: 08:00 às 12:00\n• Quarta-feira — Tarde: 14:00 às 18:00\n\nℹ️ *Observação:*\nAtende somente retorno às sextas.\n```\n\nRegras de formatação:\n- `day_of_week`: 0=Domingo, 1=Segunda, 2=Terça, 3=Quarta, 4=Quinta, 5=Sexta, 6=Sábado\n- Se `consultation_value` for nulo, exiba \"consulte valores\"\n- Exiba a seção `ℹ️` apenas se houver itens em `information`\n- Use o campo `key` como título da informação adicional e `information` como o texto\n\n> ⚠️ **Nunca pule essa etapa.** Mesmo que o paciente já conheça o médico, chame essa tool antes de buscar horários ou criar agendamento.\n\n### `buscar_horarios`\nUse após o paciente confirmar o médico e informar a data desejada.\nPasse o `doctor_id` e a `date` no formato `YYYY-MM-DD`.\n\n**Antes de chamar, siga estas regras:**\n1. Verifique a data atual (dia, mês e ano) {{ $('Variaveis').item.json.currentDateTime }} para validar a data solicitada.\n2. **Nunca aceite e nunca envie datas passadas.** Se o paciente informar uma data anterior a hoje, avise com gentileza e peça que escolha uma data a partir de hoje.\n3. Se o paciente informar data em linguagem natural (\"amanhã\", \"sexta-feira\", \"semana que vem\"), converta para `YYYY-MM-DD` usando a data atual como referência antes de chamar.\n4. Se não houver horários disponíveis no dia escolhido, informe o paciente e sugira o próximo dia útil, chamando a tool novamente automaticamente.\n\n### `buscar_paciente`\nUse **sempre** na primeira interação com o número do WhatsApp do paciente.\nSe retornar `found: false`, use `cadastrar_paciente`.\nSe retornar `found: true`, memorize o `patient_id` — será usado em todas as próximas chamadas.\n\n### `cadastrar_paciente`\nUse quando `buscar_paciente` retornar `found: false`.\nSolicite apenas **nome completo** — o telefone já vem do WhatsApp.\nApós cadastrar, memorize o `patient_id` retornado.\n\n### `consultar_agendamentos`\nUse quando o paciente quiser ver, confirmar ou cancelar consultas futuras.\nPasse o `patient_id` memorizado.\n⚠️ Se o retorno incluir alguma consulta com status `completed` de hoje ou ontem, inicie o fluxo de CSAT automaticamente após apresentar os agendamentos.\n\n### `criar_agendamento`\nUse **somente após** o paciente confirmar o resumo (médico + data + horário).\nCampos obrigatórios:\n- `doctor_id` — ID do médico escolhido\n- `patient_id` — ID do paciente memorizado\n- `date` — no formato `YYYY-MM-DD`\n- `time` — no formato `HH:MM`\n- `plan_id` — pergunte ao paciente se tem plano de saúde; use o ID correspondente ou o ID do plano Particular\n- `type` — use `first` se for a primeira consulta do paciente, `default` para as demais\n- `duration` — use `00:30` como padrão (30 minutos)\n\n### `atualizar_status`\nUse para confirmar (`status: 2`) ou cancelar (`status: 3`) um agendamento existente.\nSempre confirme com o paciente antes de executar.\n\n### `escalar_para_humano`\nUse quando:\n- O paciente pedir explicitamente para falar com uma pessoa\n- A situação for complexa demais\n- O paciente demonstrar frustração repetida\n\nApós escalar, informe o paciente e **pare de responder** — um atendente assumirá.\n\n**Payload de exemplo:**\n```json\n{\n  \"mode\": \"human\",\n  \"merge\": true,\n  \"history\": [\n    { \"role\": \"assistant\", \"content\": \"Paciente pediu para falar com atendente humano\" }\n  ]\n}\n```\n\n### `enviar_csat`\nUse após consulta concluída para coletar avaliação de atendimento.\nFaça as perguntas **uma de cada vez**, aguardando a resposta antes de perguntar a próxima:\n\n1. \"Como você avalia o atendimento do médico? (1 a 5 ⭐)\"\n2. \"E a recepção / agendamento? (1 a 5 ⭐)\"\n3. \"Como foi sua experiência com este atendimento via WhatsApp? (1 a 5 ⭐)\"\n\nAceite número ou palavras: \"ótimo\" = 5, \"bom\" = 4, \"regular\" = 3, \"ruim\" = 2, \"péssimo\" = 1.\nApós coletar todas as notas (ou o paciente recusar), chame a tool e agradeça.\n\nCampos obrigatórios: `patient_id`, `appointment_id`\nCampos opcionais (envie apenas os coletados):\n- `doctor` → `{ doctor_id, score, comment }`\n- `receptionist` → `{ score, comment }`\n- `bot` → `{ score, comment }`\n\n---\n\n## Formato do `history` (whatsapp_sessions)\n\nAo salvar o histórico de conversa via `PATCH /bot-sessions/{phone}`, cada item do array **deve** seguir exatamente este formato:\n\n```json\n{ \"role\": \"user\", \"content\": \"texto da mensagem do paciente\" }\n```\n\nou\n\n```json\n{ \"role\": \"assistant\", \"content\": \"texto da resposta da Cláudia\" }\n```\n\nRegras obrigatórias:\n\n- A chave é **`content`**, nunca `message`.\n- `role` só pode ser `user` (mensagem do paciente) ou `assistant` (resposta da Cláudia). **Nunca** use `role: \"system\"` para isso — o system prompt já é fixo e não faz parte do histórico salvo.\n- Adicione **uma entrada por mensagem real**: uma do paciente (`user`) e, em seguida, uma da Cláudia (`assistant`). Não duplique a mesma mensagem do paciente em duas entradas.\n- Ao usar `merge: true` no update, garanta que o array enviado contenha **apenas as mensagens novas** desta interação — o merge já concatena com o histórico existente no banco.\n\n---\n\n## Fluxo de agendamento (referência)\n\n1. `greeting()` → saudar o paciente\n2. `buscar_paciente(phone)` → se não encontrar: `cadastrar_paciente(name, phone)`\n3. `buscar_especialidades()` → lista numerada\n4. paciente escolhe → `buscar_medicos(specialty_id)` → lista numerada\n5. paciente escolhe médico **ou já sabe qual é** → `buscar_medico_pelo_id(doctor_id)` → exibir detalhes\n6. perguntar data → `buscar_horarios(doctor_id, date)` → lista de horários\n7. paciente escolhe horário → mostrar resumo completo e pedir confirmação\n8. paciente confirma → `criar_agendamento(...)` → confirmar sucesso\n\n---\n\n## Fluxo de CSAT (referência)\n\n1. Identificar consulta concluída → obter `appointment_id` e `doctor_id`\n2. Perguntar nota do médico (1-5) → aguardar resposta\n3. Perguntar nota da recepção (1-5) → aguardar resposta\n4. Perguntar nota do bot/WhatsApp (1-5) → aguardar resposta\n5. `enviar_csat(patient_id, appointment_id, doctor, receptionist, bot)`\n6. Agradecer e encerrar\n\n---\n\n## Endereço do consultorio da MeMedics\n\n- Se o paciente solicitar o endereço, informe o mesmo abaixo\n\nEndereço: Rua 15 de Novembro, 90 - 13º andar - Sala 1310 - Centro - Niterói - Edificio Global Office\nHorario de funcionamento: Segunda a Sexta: 8h às 20h / Sabado: 8h às 14h\n\n---\n\n## 📞 Escalação para Atendimento Humano\n\nUse a escalação quando:\n- Paciente solicita informações sobre prontuário médico\n- Paciente faz perguntas diagnósticas/de saúde\n- Sistema de agenda está indisponível\n- Paciente tem dúvidas complexas sobre cobertura de plano\n- Conflito ou insatisfação do paciente\n\n**Template de escalação:**\n> \"Entendo sua dúvida, essa situação requer uma análise mais detalhada. Vou conectá-lo com nosso atendimento especializado agora. Um instante, por favor! 📞\"\n\n---\n\n## Tom e estilo\n\n- Linguagem simples e acolhedora\n- Emojis com moderação (📅 ✅ 👨‍⚕️)\n- Datas no formato brasileiro: `Segunda, 04/06 às 09:00`\n- Quando listar opções, use numeração: `1.`, `2.`, `3.`\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1904,
+        5344
+      ],
+      "id": "58dac585-2820-4085-8651-9909d224bc91",
+      "name": "Claudia"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Variaveis').item.json.urlApi }}/api/bot/doctors?specialty_id={{ $fromAI(\"specialty_id\") }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        3216,
+        6544
+      ],
+      "id": "7cad618c-9eaa-49be-b1cb-881f207e4113",
+      "name": "buscar_medicos",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "qiIejC3c71p8sePd",
+          "name": "Clava Bot API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "Envia a avaliação de atendimento (CSAT) do paciente após uma consulta. Chame somente após coletar as notas do médico, da recepção e do bot.",
+        "method": "POST",
+        "url": "={{ $('Variaveis').item.json.urlApi }}/api/bot/csat",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($input) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        2272,
+        6080
+      ],
+      "id": "ee561c34-1e3f-490d-904a-5f2d1c07212e",
+      "name": "enviar_csat",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "qiIejC3c71p8sePd",
+          "name": "Clava Bot API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "description": "Ele determina se é Bom dia, Boa tarde ou Boa noite conforme a hora do dia (fusos horários de São Paulo) e adiciona esse campo saudacao em cada item do fluxo.",
+        "jsCode": "// Pega todos os itens de entrada\nconst items = $input.all();\n\n// Pega a hora atual (0-23) usando Luxon/$now\nconst hour = $now.hour; // se quiser forçar fuso: $now.setZone('America/Sao_Paulo').hour\n\nlet greeting = 'Boa noite'; // default\n\nif (hour >= 5 && hour < 12) {\n  greeting = 'Bom dia';\n} else if (hour >= 12 && hour < 18) {\n  greeting = 'Boa tarde';\n}\n\n// Adiciona o campo em cada item\nfor (const item of items) {\n  item.json.saudacao = greeting;\n}\n\nreturn items;\n"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolCode",
+      "typeVersion": 1.3,
+      "position": [
+        3328,
+        5920
+      ],
+      "id": "391ced72-a0f8-423f-9a66-6a0e2a013fd3",
+      "name": "greeting"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Variaveis').item.json.urlApi }}/api/bot/doctors?doctor_id={{ $fromAI(\"doctor_id\") }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        3056,
+        6640
+      ],
+      "id": "73be341a-2750-4974-82a3-ab7eaacb488a",
+      "name": "buscar_medico_pelo_id",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "qiIejC3c71p8sePd",
+          "name": "Clava Bot API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Variaveis').item.json.urlApi }}/api/bot/doctors/{{ $fromAI(\"doctor_id\") }}/available-slots?date={{ $fromAI(\"date\") }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        2880,
+        6720
+      ],
+      "id": "ec184fb1-0799-4d17-a8cd-a8f777c98d14",
+      "name": "buscar_horarios",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "qiIejC3c71p8sePd",
+          "name": "Clava Bot API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Variaveis').item.json.urlApi }}/api/bot/doctors/{{ $fromAI(\"doctor_id\") }}/appointments",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"patient_id\": {{ $fromAI(\"patient_id\") }},\n  \"plan_id\": {{ $fromAI(\"plan_id\") }},\n  \"type\": \"{{ $fromAI('type') }}\",\n  \"date\": \"{{ $fromAI('date') }}\",\n  \"time\": \"{{ $fromAI('time') }}\",\n  \"duration\": \"{{ $fromAI('duration', '00:30') }}\",\n  \"user_id\": 112\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        3376,
+        5712
+      ],
+      "id": "e440056b-7fc1-491e-af8e-e9e1bce7f386",
+      "name": "criar_agendamento",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "qiIejC3c71p8sePd",
+          "name": "Clava Bot API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "sendMessage",
+        "instanceApiKey": "={{ $('Webhook').first().json.body.instanceToken }}",
+        "sendTextNumber": "={{($('Webhook').first().json.body.data.Info.Sender.match(/\\d+/) || [])[0]}}",
+        "sendTextContent": "={{ $('Claudia').item.json.output }}",
+        "sendTextDelay": 1000,
+        "sendTextAdditionalFields": {},
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-evolution-go.evoGo",
+      "typeVersion": 1,
+      "position": [
+        2512,
+        5344
+      ],
+      "id": "1fa25a4d-db1e-43c8-bd60-5c228bd2fd84",
+      "name": "Send text message",
+      "credentials": {
+        "evoGoApi": {
+          "id": "OXRmiT76oyJHf0cg",
+          "name": "EvoGo account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "4976ad61-d991-48ce-8c31-fe46f0c9a2bf",
+              "name": "body.data.Info.PushName",
+              "value": "={{ $json.body.data.Info.PushName }}",
+              "type": "string"
+            },
+            {
+              "id": "af6c1110-868f-4ab4-9b74-431feeddafa4",
+              "name": "body.data.Info.Sender",
+              "value": "={{ ($json.body.data.Info.Sender.match(/\\d+/) || [])[0] }}",
+              "type": "string"
+            },
+            {
+              "id": "70070e20-3bad-4c8c-b3f8-f226923d6c0f",
+              "name": "body.data.Info.Type",
+              "value": "={{ $json.body.data.Info.Type }}",
+              "type": "string"
+            },
+            {
+              "id": "ee1e3338-a0d4-4e5b-a976-791868e5e1a6",
+              "name": "body.data.Message.conversation",
+              "value": "={{ $json.body.data.Message.conversation }}",
+              "type": "string"
+            },
+            {
+              "id": "16448c69-4207-41ca-8ca3-a444866d4ea4",
+              "name": "body.event",
+              "value": "={{ $json.body.event }}",
+              "type": "string"
+            },
+            {
+              "id": "675bbf64-fbf0-4b10-ad9c-521c6f9352ca",
+              "name": "mediaType",
+              "value": "={{ $json.body.data.Info.MediaType }}",
+              "type": "string"
+            },
+            {
+              "id": "c59085e1-c017-4fed-8f20-de54e48cd0cb",
+              "name": "urlApi",
+              "value": "https://clavaconsult.ghqegs.easypanel.host",
+              "type": "string"
+            },
+            {
+              "id": "f951140e-a501-42f2-b305-6c4a2dc0c826",
+              "name": "X-Bot-Key",
+              "value": "CsxSGPVpoNqRaeH10XjQZlxswJnNKtjl",
+              "type": "string"
+            },
+            {
+              "id": "f8296645-0d17-4b2b-850f-a64c270dee87",
+              "name": "unitAddressId",
+              "value": "2",
+              "type": "string"
+            },
+            {
+              "id": "bef70259-ed8a-4736-bffe-0ba1762d6505",
+              "name": "body.instanceToken",
+              "value": "={{ $json.body.instanceToken }}",
+              "type": "string"
+            },
+            {
+              "id": "51616639-e7e8-4c5b-9e83-b2fbc726ae31",
+              "name": "body.instanceName",
+              "value": "={{ $json.body.instanceName }}",
+              "type": "string"
+            },
+            {
+              "id": "966f7857-78ca-4b49-a6dd-696d02ad85d7",
+              "name": "currentDateTime",
+              "value": "={{$now}}",
+              "type": "string"
+            },
+            {
+              "id": "0ac7e6d3-0d14-46d1-87b4-802324a912e2",
+              "name": "currentHour",
+              "value": "={{ $now.setZone('America/Sao_Paulo').hour }}",
+              "type": "number"
+            },
+            {
+              "id": "dfde4f48-6705-4b26-a9b6-72bc8903039a",
+              "name": "currentDayOfWeek",
+              "value": "={{ $now.setZone('America/Sao_Paulo').weekday }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -768,
+        5344
+      ],
+      "id": "4abbc8cd-e4b7-4bcc-92f0-4c24c912f729",
+      "name": "Variaveis"
+    },
+    {
+      "parameters": {
+        "resource": "sendMessage",
+        "instanceApiKey": "={{ $('Variaveis').item.json.body.instanceToken }}",
+        "sendTextNumber": "={{ $json.phone }}",
+        "sendTextContent": "={{ $json.mensagem }}",
+        "sendTextDelay": 1000,
+        "sendTextAdditionalFields": {},
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-evolution-go.evoGo",
+      "typeVersion": 1,
+      "position": [
+        800,
+        5536
+      ],
+      "id": "24adf307-60e9-4d70-a407-ff7fba5065f0",
+      "name": "Enviar lembrete WhatsApp",
+      "credentials": {
+        "evoGoApi": {
+          "id": "OXRmiT76oyJHf0cg",
+          "name": "EvoGo account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "assign-msg-001",
+              "name": "mensagem",
+              "value": "=Infelizmente estamos fora do nosso horário de atendimento. \n\nMas não se preocupe, que assim que possível retornaremos o contato! 😊\n\n📅 Horário de atendimento:\nSeg–Sex: 8h às 20h | Sáb: 8h às 14h",
+              "type": "string"
+            },
+            {
+              "id": "assign-msg-002",
+              "name": "phone",
+              "value": "={{ $('Variaveis').item.json.body.data.Info.Sender }}",
+              "type": "string"
+            },
+            {
+              "id": "assign-msg-003",
+              "name": "instanceName",
+              "value": "={{ $('Variaveis').item.json.body.instanceName }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        560,
+        5536
+      ],
+      "id": "82ccfd32-128e-4405-a6ee-911103c90c40",
+      "name": "Montar mensagem de fora de horário"
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "operation": "transcribe",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.3,
+      "position": [
+        1056,
+        5184
+      ],
+      "id": "07d64a84-1360-442b-884e-26103e6501bc",
+      "name": "Transcribe a recording",
+      "credentials": {
+        "openAiApi": {
+          "id": "jnFO0n9oHtcCkRu6",
+          "name": "Minha assinatura OpenAI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const base64 = $('Webhook').first().json.body.data.Message.base64;\n\nreturn [\n  {\n    json: {\n      ...$json\n    },\n    binary: {\n      data: {\n        data: base64,\n        mimeType: 'audio/ogg',\n        fileName: 'audio.ogg'\n      }\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        800,
+        5184
+      ],
+      "id": "6db5ab3a-d3b1-4a55-ad29-90aefe7e3209",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ $('Variaveis').item.json.urlApi }}/api/bot/sessions/{{ $('Variaveis').item.json.body.data.Info.Sender }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  mode: \"human\",\n  merge: true,\n  history: [\n    {\n      role: \"user\",\n      content: $fromAI(\"input\"),\n      date: $('Webhook').first().json.body.data.Info.Timestamp\n    }\n  ]\n}) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        2688,
+        6736
+      ],
+      "id": "222a534c-fba3-4fd4-a716-b4c583402a23",
+      "name": "escalar_para_humano",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "qiIejC3c71p8sePd",
+          "name": "Clava Bot API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -304,
+        5344
+      ],
+      "id": "a8b1ee35-13f6-4a42-bc1f-6160fca5cf89",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        240,
+        5632
+      ],
+      "id": "dda3fadc-e5f7-4bb5-a586-fa9bafc7a89a",
+      "name": "No Operation, do nothing"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Variaveis').item.json.urlApi }}/api/bot/whatsapp-white-lists",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -560,
+        5344
+      ],
+      "id": "98f9c9fe-23c4-459b-b295-ebe6c04f2a26",
+      "name": "Whitelist",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "qiIejC3c71p8sePd",
+          "name": "Clava Bot API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "d00204b9-2009-4719-8764-29e0d93a786b",
+              "leftValue": "={{ $json.phone }}",
+              "rightValue": "={{ $('Variaveis').item.json.body.data.Info.Sender }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -64,
+        5504
+      ],
+      "id": "5c9c4aa4-02be-4c7f-8ecc-2bfe52c642e4",
+      "name": "Está na Whitelist?"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [\n  {\n    json: {\n      ...$json,\n      mensagem_texto: $('Variaveis').first().json.body?.data?.Message?.conversation || $json.text || ''\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1264,
+        5344
+      ],
+      "id": "d0bc2c34-fea6-4799-ae73-5accc542c410",
+      "name": "merge_mensagem_de_texto"
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ $('Variaveis').item.json.urlApi }}/api/bot/sessions/{{ $('Variaveis').item.json.body.data.Info.Sender }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  merge: true,\n  history: [\n    {\n      role: \"user\",\n      content: $('merge_mensagem_de_texto').item.json.mensagem_texto,\n      date: $('Webhook').first().json.body.data.Info.Timestamp\n    },\n    {\n      role: \"assistant\",\n      content: $json.output,\n      date: $now.toFormat('yyyy-MM-dd HH:mm:ss')\n    }\n  ]\n}) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        2256,
+        5344
+      ],
+      "id": "5e9b710a-fe1e-43a1-b85c-9b503db5bca4",
+      "name": "salva_sessao",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "qiIejC3c71p8sePd",
+          "name": "Clava Bot API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "f57769cb-f0f2-4405-8132-929a57fbccb2",
+              "leftValue": "={{ $json.mode }}",
+              "rightValue": "human",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1664,
+        5344
+      ],
+      "id": "84a872dd-68e0-46a8-9acb-b6212c5bef25",
+      "name": "If"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1904,
+        5168
+      ],
+      "id": "3bdeefd3-f15f-498d-9bd2-967574eb5b57",
+      "name": "No Operation, do nothing1"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Variaveis').item.json.urlApi }}/api/bot/sessions/{{ $('Variaveis').item.json.body.data.Info.Sender }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1472,
+        5344
+      ],
+      "id": "9f9bc5c2-7004-44b7-9c10-28cdb30c9664",
+      "name": "verificando_modo_da_sessao",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "qiIejC3c71p8sePd",
+          "name": "Clava Bot API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "function estaNoHorarioDeAtendimento() {\n  const agora = $now; // Luxon DateTime do n8n\n  const diaSemana = agora.weekday; // 1 = segunda, ..., 6 = sábado, 7 = domingo\n  const minutosAgora = agora.hour * 60 + agora.minute;\n\n  const inicio = 8 * 60;   // 08:00\n  const fimSemana = 20 * 60; // 20:00\n  const fimSabado = 14 * 60; // 14:00\n\n  if (diaSemana >= 1 && diaSemana <= 5) {\n    return minutosAgora >= inicio && minutosAgora < fimSemana;\n  }\n\n  if (diaSemana === 6) {\n    return minutosAgora >= inicio && minutosAgora < fimSabado;\n  }\n\n  return false; // domingo\n}\n\nreturn [\n  {\n    json: {\n      emHorarioAtendimento: estaNoHorarioDeAtendimento()\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        16,
+        5328
+      ],
+      "id": "4ecc3e67-c9bf-42a5-bacd-ab67d8e2ce47",
+      "name": "verificar_horário_de_atendimento"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "cond-hour-min",
+              "leftValue": "={{ $json.emHorarioAtendimento }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        256,
+        5328
+      ],
+      "id": "b4391598-6570-4e96-814a-edbded6d99bd",
+      "name": "esta_no_horario_de_funcionamento"
+    }
+  ],
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "integrations-n8n.ghqegs.easypanel.host",
+            "user-agent": "Go-http-client/2.0",
+            "content-length": "1423",
+            "accept-encoding": "gzip",
+            "content-type": "application/json",
+            "x-forwarded-for": "172.18.0.1",
+            "x-forwarded-host": "integrations-n8n.ghqegs.easypanel.host",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "a578f1d99b71",
+            "x-real-ip": "172.18.0.1"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "data": {
+              "Info": {
+                "AddressingMode": "",
+                "BroadcastListOwner": "",
+                "BroadcastRecipients": null,
+                "Category": "",
+                "Chat": "5521981321890@s.whatsapp.net",
+                "DeviceSentMeta": null,
+                "Edit": "",
+                "ID": "AC363FC85419DB6360CBC9CDEB467F67",
+                "IsFromMe": false,
+                "IsGroup": false,
+                "MediaType": "",
+                "MsgBotInfo": {
+                  "EditSenderTimestampMS": "0001-01-01T00:00:00Z",
+                  "EditTargetID": "",
+                  "EditType": ""
+                },
+                "MsgMetaInfo": {
+                  "DeprecatedLIDSession": null,
+                  "TargetChat": "",
+                  "TargetID": "",
+                  "TargetSender": "",
+                  "ThreadMessageID": "",
+                  "ThreadMessageSenderJID": ""
+                },
+                "Multicast": false,
+                "PushName": "Robson Pedreira",
+                "RecipientAlt": "",
+                "Sender": "5521981321890@s.whatsapp.net",
+                "SenderAlt": "277966055559229@lid",
+                "ServerID": 0,
+                "Timestamp": "2026-06-29T09:41:26-03:00",
+                "Type": "text",
+                "VerifiedName": null
+              },
+              "IsBotInvoke": false,
+              "IsDocumentWithCaption": false,
+              "IsEdit": false,
+              "IsEphemeral": false,
+              "IsLottieSticker": false,
+              "IsViewOnce": false,
+              "IsViewOnceV2": false,
+              "IsViewOnceV2Extension": false,
+              "Message": {
+                "conversation": "Oi quero fazer um agendamento",
+                "messageContextInfo": {
+                  "deviceListMetadata": {
+                    "recipientKeyHash": "GrT2Cx2W0Bs2zw==",
+                    "recipientTimestamp": 1782130501
+                  },
+                  "deviceListMetadataVersion": 2,
+                  "messageSecret": "r1Hg5huX1TsUv/OkO9/ypxLxZDVAGWbV5MtgRjoXO9w="
+                }
+              },
+              "NewsletterMeta": null,
+              "RetryCount": 0,
+              "SourceWebMsg": null,
+              "UnavailableRequestID": ""
+            },
+            "event": "Message",
+            "instanceId": "d298a146-8bf5-43a6-b2ea-8dfb37d8571c",
+            "instanceName": "global-office-1780686993480",
+            "instanceToken": "98d14b4f-6cfb-498b-af78-b0e8a06f6233"
+          },
+          "webhookUrl": "https://integrations-n8n.ghqegs.easypanel.host/webhook/global-office-bot",
+          "executionMode": "production"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "cadastrar_paciente": {
+      "ai_tool": [
+        [
+          {
+            "node": "Claudia",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "consultar_agendamentos": {
+      "ai_tool": [
+        [
+          {
+            "node": "Claudia",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "atualizar_status": {
+      "ai_tool": [
+        [
+          {
+            "node": "Claudia",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Claudia",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Variaveis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [],
+        [
+          {
+            "node": "merge_mensagem_de_texto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "buscar_especialidades": {
+      "ai_tool": [
+        [
+          {
+            "node": "Claudia",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "buscar_paciente": {
+      "ai_tool": [
+        [
+          {
+            "node": "Claudia",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Redis Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Claudia",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claudia": {
+      "main": [
+        [
+          {
+            "node": "salva_sessao",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "buscar_medicos": {
+      "ai_tool": [
+        [
+          {
+            "node": "Claudia",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "enviar_csat": {
+      "ai_tool": [
+        [
+          {
+            "node": "Claudia",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "greeting": {
+      "ai_tool": [
+        [
+          {
+            "node": "Claudia",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "buscar_medico_pelo_id": {
+      "ai_tool": [
+        [
+          {
+            "node": "Claudia",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "buscar_horarios": {
+      "ai_tool": [
+        [
+          {
+            "node": "Claudia",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "criar_agendamento": {
+      "ai_tool": [
+        [
+          {
+            "node": "Claudia",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Variaveis": {
+      "main": [
+        [
+          {
+            "node": "Whitelist",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Montar mensagem de fora de horário": {
+      "main": [
+        [
+          {
+            "node": "Enviar lembrete WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Transcribe a recording",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transcribe a recording": {
+      "main": [
+        [
+          {
+            "node": "merge_mensagem_de_texto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "escalar_para_humano": {
+      "ai_tool": [
+        [
+          {
+            "node": "Claudia",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "verificar_horário_de_atendimento",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Está na Whitelist?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Whitelist": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Está na Whitelist?": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "merge_mensagem_de_texto": {
+      "main": [
+        [
+          {
+            "node": "verificando_modo_da_sessao",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "salva_sessao": {
+      "main": [
+        [
+          {
+            "node": "Send text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Claudia",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "verificando_modo_da_sessao": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "verificar_horário_de_atendimento": {
+      "main": [
+        [
+          {
+            "node": "esta_no_horario_de_funcionamento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "esta_no_horario_de_funcionamento": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Montar mensagem de fora de horário",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "timezone": "America/Sao_Paulo",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "ad942091-d772-4b78-b285-6bada13c9374",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "9a219a13ce4dc430826d396377908841236b38cf3b86569d90b82eb48783bf5e"
+  },
+  "nodeGroups": [],
+  "id": "UZt9IKytb4K2VvSk",
+  "tags": []
+}

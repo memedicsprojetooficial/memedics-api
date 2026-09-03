@@ -218,7 +218,14 @@
       "Bash(php -l /home/masterdba6/projetos/memedics-api/app/Http/Controllers/AppointmentController.php)",
       "Bash(grep -n \"from \\\\\"lucide-react\\\\\"\" /mnt/c/Users/Robson/Desktop/frontend-web/memedics-web/src/routes/_authenticated/doctor.\\\\$doctorId.tsx)",
       "Bash(grep -n \"Switch\" /mnt/c/Users/Robson/Desktop/frontend-web/memedics-web/src/routes/_authenticated/doctor.\\\\$doctorId.tsx | head -3)",
-      "Bash(grep -E 'doctor\\\\.\\\\$doctorId|lib/api\\\\.ts|lib/types\\\\.ts')"
+      "Bash(grep -E 'doctor\\\\.\\\\$doctorId|lib/api\\\\.ts|lib/types\\\\.ts')",
+      "Bash(git fetch *)",
+      "Bash(python3 -c ' *)",
+      "Bash(php -l /home/masterdba6/projetos/memedics-api/app/Http/Controllers/Bot/BotController.php)",
+      "Bash(docker exec memedics-api-mysql-1 mysql -usail -ppassword clava -e ' *)",
+      "Bash(rm -f /tmp/botfix.json)",
+      "Bash(curl -s -o /tmp/p4.json -w 'HTTP %{http_code}\\\\n' -m 20 -X PUT -H 'Authorization: Bearer __TRACKED_VAR__' -H 'Content-Type: application/json' -H 'Accept: application/json' -d '{\"document\":\"99999999999\"}' http://localhost/api/patients/590)",
+      "Bash(curl -s -o /tmp/p5.json -w 'HTTP %{http_code}\\\\n' -m 20 -X PUT -H 'Authorization: Bearer __TRACKED_VAR__' -H 'Content-Type: application/json' -H 'Accept: application/json' -d '{\"document\":\"52998224725\"}' http://localhost/api/patients/590)"
     ]
   }
 }

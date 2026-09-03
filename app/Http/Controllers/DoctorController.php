@@ -6,6 +6,7 @@ use App\Http\Resources\DoctorResource;
 use App\Models\Doctor;
 use App\Models\ReportTab;
 use App\Models\User;
+use App\Rules\Cpf;
 use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
@@ -81,7 +82,7 @@ class DoctorController extends Controller
             'password' => ['required', 'string', 'max:255'],
             'admin' => ['required', 'boolean'],
             'unit_addresses_id' => ['required', 'integer', 'numeric'],
-            'cpf' => ['required', 'string', 'max:255', 'unique:doctors'],
+            'cpf' => ['required', 'string', 'max:255', 'unique:doctors', new Cpf()],
             'phone' => ['string', 'max:255'],
             'council_type' => ['required', 'string', 'max:255'],
             'council_number' => ['required', 'string', 'max:255', 'unique:doctors'],
@@ -119,12 +120,23 @@ class DoctorController extends Controller
      */
     public function update(Doctor $doctor, Request $request): DoctorResource
     {
+        $cpfRules = ['sometimes', 'string', 'max:255', Rule::unique('doctors')->ignore($doctor->id)];
+
+        // Só exige dígito verificador válido quando o CPF está de fato sendo
+        // alterado — cadastros antigos podem ter CPF inválido, e isso não pode
+        // bloquear a edição de outros campos do médico.
+        $incomingCpf = $request->input('cpf');
+        if ($incomingCpf !== null
+            && preg_replace('/\D/', '', $incomingCpf) !== preg_replace('/\D/', '', (string) $doctor->cpf)) {
+            $cpfRules[] = new Cpf();
+        }
+
         $input = $request->validate([
             'name' => ['sometimes', 'string', 'min:3', 'max:255'],
             'company_name' => ['sometimes', 'nullable', 'string', 'min:3', 'max:255'],
             'email' => ['sometimes', 'string', 'max:255', 'email', Rule::unique('users')->ignore($doctor->user->id)],
             'admin' => ['sometimes', 'boolean'],
-            'cpf' => ['sometimes', 'string', 'max:255', Rule::unique('doctors')->ignore($doctor->id)],
+            'cpf' => $cpfRules,
             'phone' => ['sometimes', 'string', 'max:255'],
             'council_type' => ['sometimes', 'string', 'max:255'],
             'council_number' => ['sometimes', 'string', 'max:255', Rule::unique('doctors')->ignore($doctor->id)],
