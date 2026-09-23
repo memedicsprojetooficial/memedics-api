@@ -12,8 +12,7 @@ use RuntimeException;
 use Throwable;
 
 /**
- * Controller novo, paralelo ao EvolutionGoController — não o substitui ainda.
- * Migração Evolution Go → WAHA, Fase 1: ver MIGRACAO_WAHA.md.
+ * Gerencia as conexões de WhatsApp por unidade via WAHA.
  */
 class WahaController extends Controller
 {

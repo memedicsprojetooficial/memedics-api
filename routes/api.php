@@ -28,7 +28,6 @@ use App\Http\Controllers\UnitRoomController;
 use App\Http\Controllers\UpdatePasswordController;
 use App\Http\Controllers\DoctorPlanController;
 use App\Http\Controllers\DoctorInformationController;
-use App\Http\Controllers\EvolutionGoController;
 use App\Http\Controllers\WahaController;
 use App\Http\Controllers\DoctorScheduleConfigController;
 use App\Http\Controllers\WorkTimeController;
@@ -202,21 +201,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('cids', [CIDController::class, 'index']);
 
-    // ── Evolution Go (WhatsApp) ───────────────────────────────────────────────
-    Route::prefix('evolution')->middleware('can:manage-whatsapp')->group(function () {
-        // Listagem global
-        Route::get('/', [EvolutionGoController::class, 'index']);
-
-        // Operações por unidade
-        Route::post  ('/units/{unit}',            [EvolutionGoController::class, 'storeForUnit']);
-        Route::post  ('/units/{unit}/connect',    [EvolutionGoController::class, 'connectUnit']);
-        Route::post  ('/units/{unit}/disconnect', [EvolutionGoController::class, 'disconnectUnit']);
-        Route::delete('/units/{unit}',            [EvolutionGoController::class, 'destroyUnit']);
-        Route::get   ('/units/{unit}/qr',         [EvolutionGoController::class, 'qrCodeUnit']);
-        Route::get   ('/units/{unit}/status',     [EvolutionGoController::class, 'statusUnit']);
-    });
-
-    // ── WAHA (WhatsApp) — migração em andamento, ver MIGRACAO_WAHA.md ─────────
+    // ── WAHA (WhatsApp) ────────────────────────────────────────────────────────
     Route::prefix('waha')->middleware('can:manage-whatsapp')->group(function () {
         Route::get('/', [WahaController::class, 'index']);
 

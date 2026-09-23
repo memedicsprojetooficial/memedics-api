@@ -30,11 +30,6 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
-    'evolution_go' => [
-        'url'     => env('EVOLUTION_GO_URL'),
-        'api_key' => env('EVOLUTION_GO_APIKEY'),
-    ],
-
     'waha' => [
         'url'     => env('WAHA_URL'),
         'api_key' => env('WAHA_APIKEY'),

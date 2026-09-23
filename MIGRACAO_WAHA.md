@@ -452,30 +452,49 @@ uma janela formal agendada.
   então voltam a funcionar assim que o workflow antigo for reativado — não é necessário
   re-escanear nada para reverter.
 
-## Fase 5 — Descomissionamento
+## Fase 5 — Descomissionamento  ⚠️ executada em 23/09/2026 fora da ordem original
 
-Só depois de um período de estabilidade confirmada em produção (definir por quanto
-tempo — sugestão: pelo menos uma semana de operação normal sem incidentes).
+**Gatilho originalmente definido (condição, não data):** todas as unidades ativas com
+`waha_session_name` preenchido e status `WORKING` confirmado, **mais** um período de
+estabilidade em produção depois disso. **Isso não tinha acontecido ainda** — nenhuma
+unidade havia migrado (n8n não publicado, nenhum QR real escaneado) quando o usuário
+pediu explicitamente para prosseguir mesmo assim, entendendo que isso quebra o WhatsApp
+de todas as unidades até elas migrarem pra WAHA (decisão registrada, não um erro do
+plano).
 
-- [ ] Remover `EvolutionGoService.php`, `EvolutionGoController.php` (se não reaproveitado
-      na Fase 1) e o bloco `evolution_go` de `config/services.php`.
-- [ ] Migration removendo `evolution_instance_id`/`evolution_token` de `unit_addresses`.
+- [x] **Frontend:** removido `EvolutionCell` de `settings.tsx` e o bloco `evolution` de
+      `api.ts`. Rótulo do `WahaCell` deixou de ser "WAHA (teste)" — agora é a única
+      forma de conexão exibida, sem rótulo de teste. Removido `evolutionInstanceId` e
+      `EvolutionStatus` de `types.ts`. Verificado com `tsc --noEmit`: nenhum erro nos
+      arquivos alterados (erros pré-existentes em outros arquivos, não relacionados).
+- [x] Removidos `EvolutionGoService.php` e `EvolutionGoController.php`. Removido o bloco
+      `evolution_go` de `config/services.php`. Removida a rota `/evolution/*` e o import
+      do controller em `routes/api.php`. Removidos `evolution_instance_id`/
+      `evolution_token` de `$fillable`/`$hidden` em `UnitAddress.php` e do
+      `UnitAddressResource.php`.
+- [x] Migration `2026_09_23_140000_drop_evolution_fields_from_unit_addresses_table.php`
+      criada (dropa `evolution_instance_id`/`evolution_token`) — **não executada** por
+      este agente (sem driver de MySQL disponível no ambiente sandbox). Falta rodar
+      `php artisan migrate` no ambiente com acesso ao banco.
+  - Nota: `EVOLUTION_GO_URL`/`EVOLUTION_GO_APIKEY` ficaram órfãs no `.env` local (não
+    afetam nada, mas podem ser removidas manualmente por limpeza).
 - [ ] Remover o pacote `n8n-nodes-evolution-go` do ambiente n8n e o workflow antigo
-      (ou arquivá-lo desativado, para referência).
-- [ ] Encerrar a assinatura/servidor do Evolution Go.
-- [ ] Atualizar este documento e o `AGENTS.md`/documentação do projeto removendo
-      referências ao Evolution Go.
+      (ou arquivá-lo desativado, para referência) — manual, no n8n.
+- [ ] Encerrar a assinatura/servidor do Evolution Go — manual, decisão/ação do usuário.
+- [x] Este documento atualizado. `AGENTS.md` não tinha nenhuma referência ao Evolution Go
+      (é sobre a ferramenta `n8nac`, sem relação).
 
-## Referência rápida — arquivos afetados
+## Referência rápida — arquivos afetados (estado final, pós-Fase 5)
 
 | Camada | Arquivo |
 |---|---|
-| Config | `config/services.php`, `.env` |
-| Backend | `app/Services/EvolutionGoService.php` (→ `WahaService.php`) |
-| Backend | `app/Http/Controllers/EvolutionGoController.php` |
-| Backend | `app/Http/Controllers/AppointmentPublicLinkController.php` |
-| Backend | `app/Models/UnitAddress.php` |
-| Banco | `database/migrations/..._add_evolution_fields_to_unit_addresses_table.php` (nova migration, não editar a antiga) |
-| Frontend | `src/lib/api.ts` (bloco `evolution`) |
-| Frontend | `src/routes/_authenticated/settings.tsx` (`EvolutionCell`) |
-| n8n | `MeMedics - Bot Global Offices.json` — nós `Send text message`, `Enviar lembrete WhatsApp`, e todo nó que lê o payload do webhook recebido |
+| Config | `config/services.php` (só `waha`), `.env` (`EVOLUTION_GO_*` órfãs, podem ser limpas) |
+| Backend | `app/Services/WahaService.php` (Evolution Go removido) |
+| Backend | `app/Http/Controllers/WahaController.php` (Evolution Go removido) |
+| Backend | `app/Http/Controllers/AppointmentPublicLinkController.php` (usa `WahaService`) |
+| Backend | `app/Models/UnitAddress.php`, `app/Http/Resources/UnitAddressResource.php` |
+| Banco | `database/migrations/2026_09_23_140000_drop_evolution_fields_from_unit_addresses_table.php` — **falta rodar** |
+| Frontend | `src/lib/api.ts` (só bloco `waha`) |
+| Frontend | `src/routes/_authenticated/settings.tsx` (só `WahaCell`) |
+| Frontend | `src/lib/types.ts` (`wahaSessionName`, sem `evolutionInstanceId`) |
+| n8n | `MeMedics - Bot Global Offices.json` (produção — **ainda não publicado o migrado**), `MeMedics - Bot Global Offices - WAHA (teste).json` (pronto) |
