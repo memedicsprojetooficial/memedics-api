@@ -29,6 +29,7 @@ use App\Http\Controllers\UpdatePasswordController;
 use App\Http\Controllers\DoctorPlanController;
 use App\Http\Controllers\DoctorInformationController;
 use App\Http\Controllers\EvolutionGoController;
+use App\Http\Controllers\WahaController;
 use App\Http\Controllers\DoctorScheduleConfigController;
 use App\Http\Controllers\WorkTimeController;
 use App\Http\Resources\UserResource;
@@ -213,6 +214,18 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/units/{unit}',            [EvolutionGoController::class, 'destroyUnit']);
         Route::get   ('/units/{unit}/qr',         [EvolutionGoController::class, 'qrCodeUnit']);
         Route::get   ('/units/{unit}/status',     [EvolutionGoController::class, 'statusUnit']);
+    });
+
+    // ── WAHA (WhatsApp) — migração em andamento, ver MIGRACAO_WAHA.md ─────────
+    Route::prefix('waha')->middleware('can:manage-whatsapp')->group(function () {
+        Route::get('/', [WahaController::class, 'index']);
+
+        Route::post  ('/units/{unit}',            [WahaController::class, 'storeForUnit']);
+        Route::post  ('/units/{unit}/connect',    [WahaController::class, 'connectUnit']);
+        Route::post  ('/units/{unit}/disconnect', [WahaController::class, 'disconnectUnit']);
+        Route::delete('/units/{unit}',            [WahaController::class, 'destroyUnit']);
+        Route::get   ('/units/{unit}/qr',         [WahaController::class, 'qrCodeUnit']);
+        Route::get   ('/units/{unit}/status',     [WahaController::class, 'statusUnit']);
     });
 
     Route::post('medical-reports', [MedicalReportController::class, 'store']);

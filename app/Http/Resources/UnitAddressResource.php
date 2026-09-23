@@ -25,6 +25,7 @@ class UnitAddressResource extends JsonResource
             'state'          => $this->state,
             'zip_code'               => $this->zip_code,
             'evolution_instance_id'  => $this->evolution_instance_id,
+            'waha_session_name'      => $this->waha_session_name,
             'business_hours'         => UnitBusinessHourResource::collection($this->businessHours),
             'created_at'     => $this->created_at,
             'updated_at'     => $this->updated_at,

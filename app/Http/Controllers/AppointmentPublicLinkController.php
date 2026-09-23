@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Events\ScheduleUpdated;
 use App\Models\Appointment;
-use App\Services\EvolutionGoService;
+use App\Services\WahaService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Str;
 use RuntimeException;
@@ -17,7 +17,7 @@ class AppointmentPublicLinkController extends Controller
      */
     private const AWAITING_CONFIRMATION_STATUS = 13;
 
-    public function __construct(private readonly EvolutionGoService $evolution)
+    public function __construct(private readonly WahaService $waha)
     {
     }
 
@@ -33,7 +33,7 @@ class AppointmentPublicLinkController extends Controller
 
         $unit = $appointment->event->doctor->unitAddress;
 
-        if (!$unit || !$unit->evolution_token) {
+        if (!$unit || !$unit->waha_session_name) {
             return response()->json([
                 'message' => 'Esta unidade não possui WhatsApp conectado. Configure em Configurações → Unidades.',
             ], 404);
@@ -47,11 +47,9 @@ class AppointmentPublicLinkController extends Controller
         }
 
         try {
-            $status = $this->evolution->getStatus($unit->evolution_token);
-            $connected = $status['data']['Connected'] ?? $status['Connected'] ?? false;
-            $loggedIn = $status['data']['LoggedIn'] ?? $status['LoggedIn'] ?? false;
+            $status = $this->waha->getStatus($unit->waha_session_name);
 
-            if (!$connected || !$loggedIn) {
+            if (($status['status'] ?? null) !== 'WORKING' || empty($status['me'])) {
                 return response()->json([
                     'message' => 'WhatsApp da unidade está desconectado. Reconecte em Configurações → Unidades.',
                 ], 422);
@@ -61,15 +59,7 @@ class AppointmentPublicLinkController extends Controller
             $url = "{$baseUrl}/confirmar-consulta/{$appointment->public_token}";
             $message = $this->buildMessage($appointment, $url);
 
-            $this->evolution->sendLinkMessage(
-                $unit->evolution_token,
-                $number,
-                $message,
-                $url,
-                'Confirmação de Consulta',
-                'Toque para confirmar, cancelar ou reagendar sua consulta',
-                'https://clavaconsult.vercel.app/icons/icon-512.png',
-            );
+            $this->waha->sendLinkMessage($unit->waha_session_name, $number, $message);
         } catch (RuntimeException $e) {
             return response()->json(['message' => $e->getMessage()], 502);
         } catch (Throwable $e) {

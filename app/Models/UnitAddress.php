@@ -26,6 +26,7 @@ class UnitAddress extends Model
         'zip_code',
         'evolution_instance_id',
         'evolution_token',
+        'waha_session_name',
     ];
 
     protected $hidden = [

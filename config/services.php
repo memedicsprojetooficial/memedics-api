@@ -35,4 +35,9 @@ return [
         'api_key' => env('EVOLUTION_GO_APIKEY'),
     ],
 
+    'waha' => [
+        'url'     => env('WAHA_URL'),
+        'api_key' => env('WAHA_APIKEY'),
+    ],
+
 ];
