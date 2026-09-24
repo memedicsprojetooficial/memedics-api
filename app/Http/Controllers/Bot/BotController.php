@@ -45,8 +45,9 @@ class BotController extends Controller
     public function doctors(Request $request): JsonResponse
     {
         $request->validate([
-            'specialty_id' => ['required_without:doctor_id', 'exists:specialties,id'],
-            'doctor_id'    => ['required_without:specialty_id', 'exists:doctors,id'],
+            'specialty_id'    => ['required_without:doctor_id', 'exists:specialties,id'],
+            'doctor_id'       => ['required_without:specialty_id', 'exists:doctors,id'],
+            'unit_address_id' => ['nullable', 'exists:unit_addresses,id'],
         ]);
 
         // Busca por ID específico
@@ -87,10 +88,11 @@ class BotController extends Controller
             ]);
         }
 
-        // Listagem por especialidade
+        // Listagem por especialidade (opcionalmente filtrada por unidade)
         $doctors = Doctor::with('user')
             ->where('specialty_id', $request->query('specialty_id'))
             ->where('show_in_bot', true)
+            ->when($request->filled('unit_address_id'), fn ($q) => $q->where('unit_addresses_id', $request->query('unit_address_id')))
             ->orderBy('id')
             ->get();
 

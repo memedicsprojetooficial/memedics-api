@@ -492,37 +492,37 @@
             {
               "id": "4976ad61-d991-48ce-8c31-fe46f0c9a2bf",
               "name": "body.data.Info.PushName",
-              "value": "={{ $json.payload._data.Info.PushName }}",
+              "value": "={{ $json.body.payload._data.Info.PushName }}",
               "type": "string"
             },
             {
               "id": "af6c1110-868f-4ab4-9b74-431feeddafa4",
               "name": "body.data.Info.Sender",
-              "value": "={{ ($json.payload.from.match(/\\d+/) || [])[0] }}",
+              "value": "={{ (($json.body.payload._data.Info.SenderAlt || $json.body.payload._data.Info.Sender).match(/\\d+/) || [])[0] }}",
               "type": "string"
             },
             {
               "id": "70070e20-3bad-4c8c-b3f8-f226923d6c0f",
               "name": "body.data.Info.Type",
-              "value": "={{ $json.payload._data.Info.Type }}",
+              "value": "={{ $json.body.payload._data.Info.Type }}",
               "type": "string"
             },
             {
               "id": "ee1e3338-a0d4-4e5b-a976-791868e5e1a6",
               "name": "body.data.Message.conversation",
-              "value": "={{ $json.payload.body }}",
+              "value": "={{ $json.body.payload._data.Message.conversation }}",
               "type": "string"
             },
             {
               "id": "16448c69-4207-41ca-8ca3-a444866d4ea4",
               "name": "body.event",
-              "value": "={{ $json.event }}",
+              "value": "={{ $json.body.event }}",
               "type": "string"
             },
             {
               "id": "675bbf64-fbf0-4b10-ad9c-521c6f9352ca",
               "name": "mediaType",
-              "value": "={{ $json.payload._data.Info.MediaType }}",
+              "value": "={{ $json.body.payload._data.Info.MediaType }}",
               "type": "string"
             },
             {
@@ -546,7 +546,7 @@
             {
               "id": "51616639-e7e8-4c5b-9e83-b2fbc726ae31",
               "name": "body.instanceName",
-              "value": "={{ $json.session }}",
+              "value": "={{ $json.body.session }}",
               "type": "string"
             },
             {
@@ -576,7 +576,7 @@
             {
               "id": "waha-session-0001",
               "name": "wahaSession",
-              "value": "={{ $json.session }}",
+              "value": "={{ $json.body.session }}",
               "type": "string"
             }
           ]
@@ -591,7 +591,7 @@
       ],
       "id": "4abbc8cd-e4b7-4bcc-92f0-4c24c912f729",
       "name": "Variaveis",
-      "notes": "WAHA (teste): PushName/Type/MediaType lidos de payload._data.Info.* (estrutura interna do whatsmeow, confirmada na Fase 0 só para mensagens de TEXTO). Sender vem de payload.from (nível superior, mais robusto). mediaType para audio/imagem (ptt/image) ainda NÃO foi confirmado com WAHA real - só o campo vazio para texto foi validado. Testar com mídia real antes de confiar no roteamento do Switch para Áudio/Imagem."
+      "notes": "CORRIGIDO em 24/09/2026 apos teste real no n8n: faltava o prefixo \".body.\" em varias expressoes (o no Webhook do n8n embrulha o payload recebido dentro de uma chave body). Sender usa SenderAlt com fallback para Sender, por causa de contatos enderecados por LID (achado real de 24/09/2026: _data.Info.Sender pode vir como \"<id>@lid\" - identificador de privacidade do WhatsApp, nao o numero de telefone - nesses casos o numero real esta em _data.Info.SenderAlt)."
     },
     {
       "parameters": {
@@ -678,7 +678,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// ATENÇÃO (migração WAHA): este caminho de campo é uma MELHOR TENTATIVA, não foi confirmado com um áudio real da WAHA (Fase 0 só testou mensagens de texto).\n// Antes de confiar neste nó em produção, envie um áudio de teste pela sessão WAHA, capture o payload do webhook e confirme o caminho real do base64/mídia.\nconst payload = $('Webhook').first().json.payload;\nconst base64 = payload?.media?.data || payload?.media?.base64 || payload?._data?.Message?.base64;\n\nreturn [\n  {\n    json: {\n      ...$json\n    },\n    binary: {\n      data: {\n        data: base64,\n        mimeType: 'audio/ogg',\n        fileName: 'audio.ogg'\n      }\n    }\n  }\n];"
+        "jsCode": "// ATENÇÃO (migração WAHA): este caminho de campo é uma MELHOR TENTATIVA, não foi confirmado com um áudio real da WAHA (Fase 0 só testou mensagens de texto).\n// Antes de confiar neste nó em produção, envie um áudio de teste pela sessão WAHA, capture o payload do webhook e confirme o caminho real do base64/mídia.\nconst payload = $('Webhook').first().json.body.payload;\nconst base64 = payload?.media?.data || payload?.media?.base64 || payload?._data?.Message?.base64;\n\nreturn [\n  {\n    json: {\n      ...$json\n    },\n    binary: {\n      data: {\n        data: base64,\n        mimeType: 'audio/ogg',\n        fileName: 'audio.ogg'\n      }\n    }\n  }\n];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -688,7 +688,7 @@
       ],
       "id": "6db5ab3a-d3b1-4a55-ad29-90aefe7e3209",
       "name": "Code in JavaScript",
-      "notes": "PENDENTE DE TESTE COM ÁUDIO REAL - ver comentário no código. Caminho do base64 não confirmado na Fase 0/1."
+      "notes": "PENDENTE DE TESTE COM AUDIO REAL. Corrigido o prefixo .body. em 24/09/2026 (mesma causa raiz dos outros nos), mas o caminho do base64 dentro de media ainda nao foi validado com um audio real."
     },
     {
       "parameters": {
@@ -698,7 +698,7 @@
         "genericAuthType": "httpHeaderAuth",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({\n  mode: \"human\",\n  merge: true,\n  history: [\n    {\n      role: \"user\",\n      content: $fromAI(\"input\"),\n      date: $('Webhook').first().json.payload._data.Info.Timestamp\n    }\n  ]\n}) }}",
+        "jsonBody": "={{ JSON.stringify({\n  mode: \"human\",\n  merge: true,\n  history: [\n    {\n      role: \"user\",\n      content: $fromAI(\"input\"),\n      date: $('Webhook').first().json.body.payload._data.Info.Timestamp\n    }\n  ]\n}) }}",
         "options": {}
       },
       "type": "n8n-nodes-base.httpRequestTool",
@@ -816,7 +816,7 @@
         "genericAuthType": "httpHeaderAuth",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({\n  merge: true,\n  history: [\n    {\n      role: \"user\",\n      content: $('merge_mensagem_de_texto').item.json.mensagem_texto,\n      date: $('Webhook').first().json.payload._data.Info.Timestamp\n    },\n    {\n      role: \"assistant\",\n      content: $json.output,\n      date: $now.toFormat('yyyy-MM-dd HH:mm:ss')\n    }\n  ]\n}) }}",
+        "jsonBody": "={{ JSON.stringify({\n  merge: true,\n  history: [\n    {\n      role: \"user\",\n      content: $('merge_mensagem_de_texto').item.json.mensagem_texto,\n      date: $('Webhook').first().json.body.payload._data.Info.Timestamp\n    },\n    {\n      role: \"assistant\",\n      content: $json.output,\n      date: $now.toFormat('yyyy-MM-dd HH:mm:ss')\n    }\n  ]\n}) }}",
         "options": {}
       },
       "type": "n8n-nodes-base.httpRequest",

@@ -294,7 +294,8 @@
       "Bash(npx --yes n8nac workspace --help)",
       "Bash(php -l app/Http/Controllers/AppointmentPublicLinkController.php)",
       "Bash(php artisan *)",
-      "Bash(php artisan tinker '--execute= *)"
+      "Bash(php artisan tinker '--execute= *)",
+      "Bash(php -l app/Http/Controllers/Bot/BotController.php)"
     ]
   }
 }

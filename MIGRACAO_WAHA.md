@@ -273,6 +273,70 @@ outro lado, já foi testada e confirmada extensivamente nas Fases 0 e 1.
       funcionando**, incluindo mensagem de áudio (transcrição + roteamento do `Switch`,
       os dois pontos que estavam marcados como não confirmados). Fase 3 encerrada.
 
+### Bugs reais encontrados testando no n8n de verdade (24/09/2026)
+
+O teste de ponta a ponta da Fase 3 (23/09/2026) tinha passado, mas ao aplicar o fluxo
+migrado no workflow real de produção (24/09/2026) apareceram dois problemas que só um
+teste contra o n8n de verdade revelaria:
+
+1. **Bug meu — prefixo `.body.` faltando.** O nó `Webhook` do n8n embrulha o payload
+   HTTP recebido dentro de uma chave `body` (junto de `headers`/`params`/`query`). Ao
+   escrever as expressões da Fase 3, esqueci esse prefixo em vários lugares — usei
+   `$json.event`/`$json.payload...`/`$json.session` quando deveria ser
+   `$json.body.event`/`$json.body.payload...`/`$json.body.session`. Sintoma: o campo
+   `body.event` do `Variaveis` resolvia pra `undefined`, e o `JSON.stringify(...)` do
+   `salva_sessao` quebrava inteiro com o erro "undefined não é JSON válido" (porque a
+   expressão do Timestamp também tinha o mesmo problema). **Corrigido** em todos os
+   campos afetados: `Variaveis` (`body.event`, `mediaType`, `body.instanceName`,
+   `wahaSession`), `salva_sessao`, `escalar_para_humano` e `Code in JavaScript`
+   (extração de áudio) — arquivo de referência atualizado.
+2. **Achado real, não um bug meu — identificador LID do WhatsApp.** Um contato de teste
+   apareceu com `_data.Info.Sender` no formato `"<id>@lid"` (ex:
+   `277966055559229@lid`) em vez do número de telefone — esse é o **LID (Linked ID)**,
+   um identificador de privacidade que o WhatsApp usa para alguns contatos em vez do
+   número real, mesmo em conversa 1:1 (não é exclusivo de grupo, como eu supunha na
+   Fase 0). Usar esse valor direto quebrava qualquer URL/chatId que dependesse do
+   número (ex: `/api/bot/sessions/277966055559229lid` — inválido). **Descoberto pelo
+   usuário testando na prática:** a WAHA/whatsmeow expõe o número real num campo
+   irmão, `_data.Info.SenderAlt` (ex: `5521981321890@s.whatsapp.net`). Corrigido o
+   `Variaveis` pra usar `SenderAlt` quando existir, com fallback pra `Sender`:
+   ```
+   {{ (($json.body.payload._data.Info.SenderAlt || $json.body.payload._data.Info.Sender).match(/\d+/) || [])[0] }}
+   ```
+   Pendente: confirmar se `SenderAlt` está sempre presente quando `Sender` é LID (só
+   confirmado com este único contato de teste até agora).
+3. **Credencial errada nos nós de envio.** `Send text message` estava usando a
+   credencial "MeMedics Bot API Key" (header `X-Bot-Key`, do backend Laravel) em vez
+   da credencial dedicada da WAHA (header `X-Api-Key`) — causava 401 Unauthorized.
+   **Corrigido pelo usuário em 24/09/2026**, criando a credencial "WAHA API Key" e
+   trocando o Header Auth nos 2 nós de envio (`Send text message`,
+   `Enviar lembrete WhatsApp`). **Confirmado funcionando** — mensagem enviada com
+   sucesso via WAHA de ponta a ponta.
+
+4. **Whitelist deixou passar um número que deveria ter sido bloqueado — não é bug da
+   migração WAHA, é um problema pré-existente de dados.** O número de teste do usuário
+   estava cadastrado no whitelist como `21981321890` (sem o DDI `55`), enquanto o
+   `Variaveis.body.data.Info.Sender` (extraído do JID do WhatsApp) sempre vem com DDI:
+   `5521981321890`. A comparação do nó `Está na Whitelist?` é `equals` estrito, então
+   nunca batia — o loop percorria a lista inteira, não achava correspondência, e
+   deixava passar pro bot (comportamento oposto ao pretendido: quem está na lista não
+   deveria chegar no bot). **Corrigido pelo usuário direto no banco** (registro
+   atualizado pra `5521981321890`).
+   - **Risco estrutural que continua existindo:** `WhatsappWhiteListController.php` só
+     tem `index()` — não há endpoint de criar/editar a lista, os números são inseridos
+     direto no banco sem nenhuma validação/normalização de formato. O mesmo erro pode
+     se repetir com o próximo número cadastrado. Não foi corrigido agora (decisão do
+     usuário, resolver o registro específico foi suficiente por ora) — se quiser uma
+     correção estrutural depois, a opção mais simples é normalizar a comparação no
+     próprio nó `Está na Whitelist?` (comparar só os últimos 11 dígitos de cada lado,
+     em vez de string igual), o que blinda contra esse formato de erro
+     independentemente de como o número for cadastrado no banco.
+
+Com os achados acima corrigidos, o fluxo de texto está validado de ponta a ponta
+contra o n8n real de produção (não só o ambiente de teste da Fase 0). Ainda vale
+re-testar o caminho de áudio depois dessas correções, já que ele também tinha o mesmo
+bug do prefixo `.body.` (corrigido, mas não re-testado com um áudio real ainda).
+
 ### Roteiro manual para fechar a Fase 3 (executado pelo usuário, sem acesso direto ao n8n de produção nesta sessão)
 
 1. **Duplicar o workflow, sem ativar.** Na UI do n8n, abrir `MeMedics - Bot Global
