@@ -50,10 +50,11 @@ class BotController extends Controller
             'unit_address_id' => ['nullable', 'exists:unit_addresses,id'],
         ]);
 
-        // Busca por ID específico
+        // Busca por ID específico (restrita à unidade informada, se houver)
         if ($request->filled('doctor_id')) {
             $doctor = Doctor::with(['user', 'specialty', 'plans', 'workTimes', 'information'])
                 ->where('show_in_bot', true)
+                ->when($request->filled('unit_address_id'), fn ($q) => $q->where('unit_addresses_id', $request->query('unit_address_id')))
                 ->findOrFail($request->query('doctor_id'));
 
             return response()->json([
