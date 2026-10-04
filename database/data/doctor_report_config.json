@@ -1,0 +1,219 @@
+{
+    "tabs": [
+        {
+            "name": "Evolução",
+            "fields": [
+                {
+                    "name": "Avaliação",
+                    "type": "textarea",
+                    "columns": 12
+                },
+                {
+                    "name": "Impressão",
+                    "type": "textarea",
+                    "columns": 12
+                },
+                {
+                    "name": "Conduta",
+                    "type": "textarea",
+                    "columns": 12
+                },
+                {
+                    "name": "Diagnóstico",
+                    "type": "textarea",
+                    "columns": 12
+                },
+                {
+                    "name": "Hipótese diagnóstica",
+                    "type": "textarea",
+                    "columns": 12
+                }
+            ]
+        },
+        {
+            "name": "Anamnase geral",
+            "fields": [
+                {
+                    "name": "CID-1",
+                    "type": "cid",
+                    "columns": 3
+                },
+                {
+                    "name": "CID-2",
+                    "type": "cid",
+                    "columns": 3
+                },
+                {
+                    "name": "CID-3",
+                    "type": "cid",
+                    "columns": 3
+                },
+                {
+                    "name": "CID-4",
+                    "type": "cid",
+                    "columns": 3
+                },
+                {
+                    "name": "Queixa principal",
+                    "type": "textarea",
+                    "columns": 12
+                },
+                {
+                    "name": "História da moléstia atual",
+                    "type": "textarea",
+                    "columns": 6
+                },
+                {
+                    "name": "Exames realizados",
+                    "type": "textarea",
+                    "columns": 6
+                },
+                {
+                    "name": "História mórbida pregressa",
+                    "type": "textarea",
+                    "columns": 6
+                },
+                {
+                    "name": "Hipótese diagnóstica",
+                    "type": "textarea",
+                    "columns": 6
+                },
+                {
+                    "name": "Antecedente mórbito familiar",
+                    "type": "textarea",
+                    "columns": 6
+                },
+                {
+                    "name": "Conduta",
+                    "type": "textarea",
+                    "columns": 6
+                }
+            ]
+        },
+        {
+            "name": "Anamnase dirigida",
+            "fields": [
+                {
+                    "name": "Aparelho circulatório",
+                    "type": "textarea",
+                    "columns": 6
+                },
+                {
+                    "name": "Aparelho respiratório",
+                    "type": "textarea",
+                    "columns": 6
+                },
+                {
+                    "name": "Aparelho digestivo",
+                    "type": "textarea",
+                    "columns": 6
+                },
+                {
+                    "name": "Aparelho geniturinário",
+                    "type": "textarea",
+                    "columns": 6
+                },
+                {
+                    "name": "Aparelho neuropsiquiátrico",
+                    "type": "textarea",
+                    "columns": 6
+                },
+                {
+                    "name": "Aparelho visual",
+                    "type": "textarea",
+                    "columns": 6
+                },
+                {
+                    "name": "Aparelho auditivo",
+                    "type": "textarea",
+                    "columns": 6
+                },
+                {
+                    "name": "Observações",
+                    "type": "textarea",
+                    "columns": 6
+                }
+            ]
+        },
+        {
+            "name": "Cirurgia",
+            "fields": [
+                {
+                    "name": "Local",
+                    "type": "text",
+                    "columns": 4
+                },
+                {
+                    "name": "Status",
+                    "type": "text",
+                    "columns": 4
+                },
+                {
+                    "name": "Motivo",
+                    "type": "text",
+                    "columns": 4
+                },
+                {
+                    "name": "Data",
+                    "type": "text",
+                    "columns": 6
+                },
+                {
+                    "name": "Hora",
+                    "type": "text",
+                    "columns": 6
+                },
+                {
+                    "name": "Cirurgia",
+                    "type": "text",
+                    "columns": 12
+                },
+                {
+                    "name": "Observações",
+                    "type": "textarea",
+                    "columns": 12
+                }
+            ]
+        },
+        {
+            "name": "Exame físico",
+            "fields": [
+                {
+                    "name": "Exame físico",
+                    "type": "text",
+                    "columns": 12
+                }
+            ]
+        },
+        {
+            "name": "Outros",
+            "fields": [
+                {
+                    "name": "Medicamentos em uso",
+                    "type": "textarea",
+                    "columns": 12
+                },
+                {
+                    "name": "Peso",
+                    "type": "text",
+                    "columns": 3
+                },
+                {
+                    "name": "Altura",
+                    "type": "text",
+                    "columns": 3
+                },
+                {
+                    "name": "Tabagismo",
+                    "type": "text",
+                    "columns": 3
+                },
+                {
+                    "name": "Etilismo",
+                    "type": "text",
+                    "columns": 3
+                }
+            ]
+        }
+    ]
+}

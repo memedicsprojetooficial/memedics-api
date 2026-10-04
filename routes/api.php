@@ -50,7 +50,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\File;
 
 /*
 |--------------------------------------------------------------------------
@@ -239,7 +239,7 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     Route::get('/ajustar-medicos', function () {
-        $config = json_decode(Storage::get('doctor_report_config.json'), true);
+        $config = json_decode(File::get(database_path('data/doctor_report_config.json')), true);
         $doctors = Doctor::whereIn('id', [40, 41, 42, 43])->get();
 
         foreach ($doctors as $doctor) {

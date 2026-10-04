@@ -228,16 +228,20 @@ outro lado, já foi testada e confirmada extensivamente nas Fases 0 e 1.
         `body.instanceToken` removido (não existe mais — autenticação vira credencial
         fixa). Novos campos `wahaUrl` (constante) e `wahaSession` (= `payload`/`session`
         de nível superior) adicionados para os nós de envio.
-  - [x] `Switch` (roteamento Áudio/Imagem/Mensagem) — **confirmado com teste real em
-        23/09/2026**: mensagem de áudio roteou corretamente para o caminho de
-        transcrição. Hipótese da Fase 0 (WAHA/GOWS e Evolution Go usam a mesma lib
-        `whatsmeow` por baixo, vocabulário de `mediaType` compatível) se confirmou na
-        prática.
-  - [x] `Code in JavaScript` (extrai base64 do áudio para transcrição) — **confirmado com
-        teste real em 23/09/2026**: a cascata `payload.media.data` /
-        `payload.media.base64` / `payload._data.Message.base64` resolveu corretamente e
-        a transcrição funcionou de ponta a ponta. Nota `PENDENTE DE TESTE COM ÁUDIO
-        REAL` no nó pode ser removida/atualizada na próxima edição do workflow.
+  - [ ] `Switch` (roteamento Áudio/Imagem/Mensagem) — **NÃO validado com áudio.**
+        Correção de 25/09/2026: a nota anterior aqui dizia "confirmado com teste real",
+        mas a varredura das 87 execuções do workflow ao vivo (MCP do n8n) não achou
+        nenhuma mensagem de áudio (`mediaType = ptt`). A única mídia recebida foi uma
+        imagem, que chegou com `mediaType = document` e foi descartada pelo `Switch`
+        (não casa com nenhuma regra e não há saída de fallback).
+  - [ ] `Code in JavaScript` (extrai base64 do áudio para transcrição) — **provavelmente
+        quebrado.** Na execução 120 (imagem) a WAHA entregou a mídia só como
+        `payload.media.url` (`http://localhost:3000/api/files/...`, sem base64 em lugar
+        nenhum do payload). Os caminhos `media.data` / `media.base64` /
+        `_data.Message.base64` que o nó tenta não existem, então `base64` fica
+        `undefined`. Caminho correto: baixar o arquivo da URL (com `X-Api-Key`) num nó
+        HTTP Request antes do `Transcribe a recording`, e configurar a `WAHA_BASE_URL`
+        da WAHA para a URL deixar de apontar para `localhost`.
   - [x] `merge_mensagem_de_texto`, `Está na Whitelist?`, `Whitelist`,
         `verificando_modo_da_sessao`, `Loop Over Items`, `If`,
         `verificar_horário_de_atendimento`, `esta_no_horario_de_funcionamento`,
@@ -336,6 +340,39 @@ Com os achados acima corrigidos, o fluxo de texto está validado de ponta a pont
 contra o n8n real de produção (não só o ambiente de teste da Fase 0). Ainda vale
 re-testar o caminho de áudio depois dessas correções, já que ele também tinha o mesmo
 bug do prefixo `.body.` (corrigido, mas não re-testado com um áudio real ainda).
+
+### Ajustes aplicados direto no workflow ao vivo via MCP do n8n (25/09/2026)
+
+Com acesso ao MCP do n8n, o workflow `QGagopzC0xzgCA2P` foi lido e corrigido (35
+operações atômicas no rascunho, depois publicado — versão ativa `5128ab48`; a versão
+anterior, `d71cf76a`, fica no histórico para rollback com `restore_workflow_version`).
+
+- **7 ferramentas do agente reativadas e ligadas ao `Claudia`:** `cadastrar_paciente`,
+  `consultar_agendamentos`, `atualizar_status`, `criar_agendamento`,
+  `escalar_para_humano`, `enviar_csat`, `greeting` (estavam desativadas e sem conexão
+  `ai_tool`, então o bot não conseguia cadastrar, agendar, cancelar, escalar nem
+  coletar CSAT). Cinco delas estavam sem credencial — ligadas à "MeMedics Bot API Key".
+  `$('Variaveis').item` trocado por `.first()` nelas.
+- **Prompt do `Claudia`:** cancelar agendamento dizia `status: 3` (no sistema, 3 = "Em
+  espera"); corrigido para `status: 7`. O ajuste anterior só tinha corrigido a
+  descrição da tool, não o prompt.
+- **`enviar_csat`:** o corpo era `JSON.stringify($input)` (não carrega os argumentos do
+  agente); trocado por `$fromAI('csat', ..., 'json')`. **Não testado.**
+- **Filtro de eventos:** novo IF `É mensagem recebida?` logo após o `Webhook`
+  (`body.event == 'message'`), para eventos `session.status` não percorrerem o fluxo.
+- **Áudio:** a WAHA não envia base64, só `media.url` (apontando para `localhost:3000`).
+  Novo nó `Baixar áudio da WAHA` baixa o arquivo pelo host público da WAHA (troca o host
+  da URL) com a credencial `WAHA_APIKEY`; o `Code in JavaScript` agora só renomeia para
+  `audio.ogg` (a OpenAI rejeita `.oga`). **Não testado** — nenhum áudio passou pelo
+  workflow até hoje.
+- **Achado fora do n8n:** em 25/09 a WAHA (`integrations-waha-plus...`) respondia
+  `GET /api/sessions?all=true` com lista **vazia** e `Session not found` para
+  `global-office-2`, e os arquivos de mídia antigos davam 404 (`/tmp/whatsapp-files`).
+  Ou seja, a sessão sumiu (reinício/redeploy da WAHA ou exclusão) e o número precisa
+  ser pareado de novo. A API reporta `tier: CORE`.
+- **Pendências conhecidas:** `criar_agendamento` continua com `user_id: 112` fixo (o
+  backend exige que exista em `users`); `unitAddressId` continua fixo em `"2"`; mídia
+  que não é texto/áudio (imagem, documento) ainda é descartada sem resposta.
 
 ### Roteiro manual para fechar a Fase 3 (executado pelo usuário, sem acesso direto ao n8n de produção nesta sessão)
 

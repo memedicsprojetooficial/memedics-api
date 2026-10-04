@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\File;
 use Illuminate\Validation\Rule;
 
 class DoctorController extends Controller
@@ -99,7 +99,7 @@ class DoctorController extends Controller
 
         $doctor->user()->save($user);
 
-        $config = json_decode(Storage::get('doctor_report_config.json'), true);
+        $config = json_decode(File::get(database_path('data/doctor_report_config.json')), true);
 
         foreach ($config['tabs'] as $tabConfig) {
             $tab = new ReportTab($tabConfig);

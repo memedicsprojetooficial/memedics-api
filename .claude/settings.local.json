@@ -295,7 +295,15 @@
       "Bash(php -l app/Http/Controllers/AppointmentPublicLinkController.php)",
       "Bash(php artisan *)",
       "Bash(php artisan tinker '--execute= *)",
-      "Bash(php -l app/Http/Controllers/Bot/BotController.php)"
+      "Bash(php -l app/Http/Controllers/Bot/BotController.php)",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\\\\n\" --max-time 15 \"https://n8n.memedics.com.br/workflow/QGagopzC0xzgCA2P\")",
+      "Bash(curl -s --max-time 15 -w \"\\\\nHTTP %{http_code}\\\\n\" \"https://n8n.memedics.com.br/api/v1/workflows/QGagopzC0xzgCA2P\")",
+      "Bash(curl -s --max-time 15 -w \"\\\\nHTTP %{http_code}\\\\n\" -X POST \"https://n8n.memedics.com.br/mcp-server/http\" -H \"Content-Type: application/json\" -H \"Accept: application/json, text/event-stream\" -d '{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"initialize\",\"params\":{\"protocolVersion\":\"2025-03-26\",\"capabilities\":{},\"clientInfo\":{\"name\":\"probe\",\"version\":\"0\"}}}')",
+      "Bash(python3 -)",
+      "Bash(awk 'NR>=60 && NR<=245 && /Route::\\(middleware|group|prefix\\)/{print NR\": \"$0}' routes/api.php)",
+      "Bash(echo \"ignorado? exit=$? \\(1 = NÃO ignorado, ok\\)\")",
+      "Bash(php -l app/Http/Controllers/DoctorController.php)",
+      "Bash(php -l routes/api.php)"
     ]
   }
 }
