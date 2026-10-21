@@ -159,6 +159,47 @@ class WahaController extends Controller
         );
     }
 
+    // ── Configurações de conexão (webhook e eventos) ──────────────────────────
+
+    public function settingsUnit(UnitAddress $unit): JsonResponse
+    {
+        if (!$unit->waha_session_name) {
+            return response()->json(['message' => 'Unidade não possui sessão vinculada.'], 404);
+        }
+
+        return $this->respond(fn () => $this->readSettings($unit));
+    }
+
+    public function updateSettingsUnit(Request $request, UnitAddress $unit): JsonResponse
+    {
+        if (!$unit->waha_session_name) {
+            return response()->json(['message' => 'Unidade não possui sessão vinculada.'], 404);
+        }
+
+        $data = $request->validate([
+            'webhook_url' => 'required|url',
+            'events'      => 'required|array|min:1',
+            'events.*'    => 'string',
+        ]);
+
+        return $this->respond(function () use ($unit, $data) {
+            // Reinicia a conexão por alguns segundos, mas preserva o pareamento.
+            $this->waha->updateWebhook($unit->waha_session_name, $data['webhook_url'], $data['events']);
+
+            return $this->readSettings($unit);
+        });
+    }
+
+    private function readSettings(UnitAddress $unit): array
+    {
+        $webhook = $this->waha->getStatus($unit->waha_session_name)['config']['webhooks'][0] ?? null;
+
+        return [
+            'webhook_url' => $webhook['url'] ?? null,
+            'events'      => $webhook['events'] ?? [],
+        ];
+    }
+
     // ── Helper ────────────────────────────────────────────────────────────────
 
     private function respond(callable $action, int $successStatus = 200): JsonResponse

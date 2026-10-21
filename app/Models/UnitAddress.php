@@ -25,7 +25,24 @@ class UnitAddress extends Model
         'state',
         'zip_code',
         'waha_session_name',
+        'bot_paused',
+        'bot_paused_until',
     ];
+
+    protected $casts = [
+        'bot_paused'       => 'boolean',
+        'bot_paused_until' => 'datetime',
+    ];
+
+    /**
+     * Pausa vale enquanto `bot_paused` estiver ligado e, se houver prazo, ele ainda
+     * não tiver vencido — a retomada por prazo é calculada na leitura, sem job.
+     */
+    public function isBotPaused(): bool
+    {
+        return $this->bot_paused
+            && ($this->bot_paused_until === null || $this->bot_paused_until->isFuture());
+    }
 
     public function company(): BelongsTo
     {

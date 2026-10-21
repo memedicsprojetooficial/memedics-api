@@ -11,6 +11,7 @@ use App\Models\Event;
 use App\Models\Patient;
 use App\Models\Payment;
 use App\Models\Specialty;
+use App\Models\UnitAddress;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -41,6 +42,25 @@ class BotController extends Controller
     // -------------------------------------------------------------------------
     // Médicos
     // -------------------------------------------------------------------------
+
+    /**
+     * Unidade dona de uma sessão da WAHA e se o bot dela está pausado. O n8n consulta
+     * isto a cada mensagem recebida.
+     */
+    public function unitBySession(string $session): JsonResponse
+    {
+        $unit = UnitAddress::where('waha_session_name', $session)->first();
+
+        if (!$unit) {
+            return response()->json(['message' => 'Nenhuma unidade vinculada a esta sessão.'], 404);
+        }
+
+        return response()->json([
+            'unit_address_id'  => $unit->id,
+            'bot_paused'       => $unit->isBotPaused(),
+            'bot_paused_until' => $unit->isBotPaused() ? $unit->bot_paused_until : null,
+        ]);
+    }
 
     public function doctors(Request $request): JsonResponse
     {

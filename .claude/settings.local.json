@@ -303,7 +303,16 @@
       "Bash(awk 'NR>=60 && NR<=245 && /Route::\\(middleware|group|prefix\\)/{print NR\": \"$0}' routes/api.php)",
       "Bash(echo \"ignorado? exit=$? \\(1 = NÃO ignorado, ok\\)\")",
       "Bash(php -l app/Http/Controllers/DoctorController.php)",
-      "Bash(php -l routes/api.php)"
+      "Bash(php -l routes/api.php)",
+      "Bash(php -m)",
+      "mcp__e111a759-9e7f-4632-a707-4acce7ce16e7__get_workflow_details",
+      "mcp__e111a759-9e7f-4632-a707-4acce7ce16e7__search_workflow_executions",
+      "mcp__e111a759-9e7f-4632-a707-4acce7ce16e7__get_workflow_history",
+      "mcp__e111a759-9e7f-4632-a707-4acce7ce16e7__get_instance_context",
+      "mcp__e111a759-9e7f-4632-a707-4acce7ce16e7__search_workflows",
+      "Bash(curl -s --max-time 30 -o /dev/null -w \"POST /webhook/global-office-bot -> HTTP %{http_code}\\\\n\" -X POST -H \"Content-Type: application/json\" -d '{\"event\":\"ping\",\"session\":\"verificacao\"}' https://n8n.memedics.com.br/webhook/global-office-bot)",
+      "Bash(curl -s --max-time 30 -o /dev/null -w \"POST /webhook-test/global-office-bot -> HTTP %{http_code}\\\\n\" -X POST -H \"Content-Type: application/json\" -d '{\"event\":\"ping\"}' https://n8n.memedics.com.br/webhook-test/global-office-bot)",
+      "Bash(rm -f /tmp/tsc_out.txt)"
     ]
   }
 }

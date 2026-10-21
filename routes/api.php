@@ -28,6 +28,7 @@ use App\Http\Controllers\UnitRoomController;
 use App\Http\Controllers\UpdatePasswordController;
 use App\Http\Controllers\DoctorPlanController;
 use App\Http\Controllers\DoctorInformationController;
+use App\Http\Controllers\UnitBotController;
 use App\Http\Controllers\WahaController;
 use App\Http\Controllers\DoctorScheduleConfigController;
 use App\Http\Controllers\WorkTimeController;
@@ -211,6 +212,11 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/units/{unit}',            [WahaController::class, 'destroyUnit']);
         Route::get   ('/units/{unit}/qr',         [WahaController::class, 'qrCodeUnit']);
         Route::get   ('/units/{unit}/status',     [WahaController::class, 'statusUnit']);
+        Route::get   ('/units/{unit}/settings',   [WahaController::class, 'settingsUnit']);
+        Route::put   ('/units/{unit}/settings',   [WahaController::class, 'updateSettingsUnit']);
+
+        Route::post  ('/units/{unit}/bot/pause',  [UnitBotController::class, 'pause']);
+        Route::post  ('/units/{unit}/bot/resume', [UnitBotController::class, 'resume']);
     });
 
     Route::post('medical-reports', [MedicalReportController::class, 'store']);

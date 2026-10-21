@@ -42,6 +42,9 @@ Route::middleware('bot.key')->prefix('bot')->group(function () {
     // Confirmar / cancelar agendamento
     Route::patch('/appointments/{appointment}/status', [BotController::class, 'updateAppointmentStatus']);
 
+    // Unidade da sessão da WAHA + estado de pausa do bot
+    Route::get('/units/by-session/{session}', [BotController::class, 'unitBySession']);
+
     // -------------------------------------------------------------------------
     // Sessões (estado da conversa)
     // -------------------------------------------------------------------------

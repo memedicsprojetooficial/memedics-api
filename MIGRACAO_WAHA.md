@@ -374,6 +374,65 @@ anterior, `d71cf76a`, fica no histórico para rollback com `restore_workflow_ver
   backend exige que exista em `users`); `unitAddressId` continua fixo em `"2"`; mídia
   que não é texto/áudio (imagem, documento) ainda é descartada sem resposta.
 
+### Verificação de ponta a ponta do bot (21/10/2026) — só leitura
+
+**Conclusão: o fluxo está correto, mas inativo — a WAHA não tem nenhuma sessão pareada,
+então nenhuma mensagem chega ao bot.** Nada foi alterado no n8n nesta verificação.
+
+- **Workflow `QGagopzC0xzgCA2P`** (ativo, 36 nós): todos os ajustes de 25/09 seguem
+  aplicados — 12 ferramentas ligadas ao `Claudia` e sem `.item` quebrado, filtro
+  `É mensagem recebida?` no lugar, caminho de áudio (`Baixar áudio da WAHA`), prompt com
+  `status: 7`. A versão ativa mudou para `eab4e2f3` (edição manual de 25/09 19:53, depois
+  da minha); o histórico antigo foi podado pelo n8n, sem diff possível.
+- **Execuções:** nenhuma retida. As 87 de 24/09 foram apagadas pela retenção do n8n e
+  **nenhuma mensagem real chegou desde 25/09**. O único registro é um evento de teste
+  `ping` enviado nesta verificação (execução 122), que o filtro descartou como esperado.
+- **WAHA:** servidor no ar (`2026.8.2`, engine GOWS, `tier: CORE`), mas
+  `GET /api/sessions?all=true` retorna `[]`. Causa provável: sessões perdidas em
+  reinício/redeploy por falta de volume persistente (para o GOWS, `/app/.sessions`).
+  Sem isso, será preciso parear de novo a cada deploy da WAHA.
+- **Backend (produção):** todos os endpoints do bot respondem 200 (10 especialidades; 1
+  médico na unidade 2 para a 1ª especialidade; horários disponíveis; `patients/find`;
+  `sessions/{phone}`). O filtro `unit_address_id` já está no ar (422 para unidade
+  inexistente; 404 para médico de outra unidade). `user_id: 112` existe, então
+  `criar_agendamento` não falha por isso.
+- **Whitelist:** 0 registros hoje (o número de teste foi removido ou apagado).
+- **Risco de segurança — webhook sem autenticação:** `POST /webhook/global-office-bot`
+  responde 200 sem nenhum header de autenticação. Quem souber a URL pode forjar um evento
+  `message` com o telefone de outra pessoa e fazer o bot consultar dados desse paciente
+  e responder pelo WhatsApp da clínica. Correção: Header Auth no nó `Webhook` + o mesmo
+  header em `customHeaders` na configuração de webhook da sessão da WAHA.
+- **Segredo exposto:** o token do MCP do n8n colado na conversa em 25/09 **continua
+  válido** (usado aqui só para leitura). Deve ser revogado.
+
+### Pausa do bot e configurações da conexão por unidade (21/10/2026)
+
+Pedido: na tela Configurações → Unidades, poder (1) alterar as configurações da
+conexão do WhatsApp e (2) pausar o bot por um período (1h/4h/8h) ou até retomar. Durante
+a pausa o bot **fica em silêncio** (decisão do usuário); o atendente fala direto pelo
+WhatsApp da unidade.
+
+- **Banco:** migration `2026_10_21_150000` — `unit_addresses.bot_paused` (bool) e
+  `bot_paused_until` (timestamp nulo = até retomar). Pausa vencida volta a "ativo" sem
+  job: `UnitAddress::isBotPaused()` calcula na leitura. **Falta rodar a migration.**
+- **API admin** (`can:manage-whatsapp`): `GET|PUT /api/waha/units/{unit}/settings`
+  (webhook e eventos; salvar reinicia a conexão por segundos, sem perder o pareamento) e
+  `POST /api/waha/units/{unit}/bot/pause|resume`.
+- **API do bot:** `GET /api/bot/units/by-session/{session}` → `{unit_address_id,
+  bot_paused, bot_paused_until}`.
+- **Tela:** engrenagem da conexão (webhook + eventos) e linha "Bot ativo / Bot pausado
+  até…" com Pausar/Retomar em cada unidade com sessão.
+- **n8n (versão ativa `e0abab68`, anterior `eab4e2f3`):** após o `Variaveis`, novo nó
+  `Estado da unidade` → IF `Bot pausado?` (pausado → `Bot pausado - ignorar`). A
+  consulta falha em modo "segue o fluxo" (`continueRegularOutput`), então sessão sem
+  unidade ou backend sem o endpoint novo **não** derruba o bot. De quebra, `unitAddressId`
+  das ferramentas passou a vir da unidade da sessão, com fallback para o `"2"` fixo.
+  Testado com `test_workflow` (dados simulados, sem OpenAI/WAHA): bot ativo percorre o
+  fluxo até o envio; bot pausado para no nó de descarte.
+- **Não verificado:** a leitura de `config.webhooks` na tela de configurações depende de
+  o `GET /api/sessions/{name}` da WAHA devolver `config` — sem sessão pareada não deu para
+  confirmar.
+
 ### Roteiro manual para fechar a Fase 3 (executado pelo usuário, sem acesso direto ao n8n de produção nesta sessão)
 
 1. **Duplicar o workflow, sem ativar.** Na UI do n8n, abrir `MeMedics - Bot Global
