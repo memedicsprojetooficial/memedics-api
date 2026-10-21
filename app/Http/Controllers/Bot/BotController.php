@@ -44,7 +44,12 @@ class BotController extends Controller
             }
         })->orderBy('name')->get(['id', 'name']);
 
-        return response()->json($specialties);
+        // `option` é a posição exibida ao paciente; `id` é o que as demais rotas esperam.
+        return response()->json($specialties->values()->map(fn (Specialty $s, int $i) => [
+            'option' => $i + 1,
+            'id'     => $s->id,
+            'name'   => $s->name,
+        ]));
     }
 
     // -------------------------------------------------------------------------
@@ -118,16 +123,19 @@ class BotController extends Controller
         }
 
         // Listagem por especialidade (opcionalmente filtrada por unidade)
-        $doctors = Doctor::with('user')
+        $doctors = Doctor::with(['user', 'specialty'])
             ->where('specialty_id', $request->query('specialty_id'))
             ->where('show_in_bot', true)
             ->when($request->filled('unit_address_id'), fn ($q) => $q->where('unit_addresses_id', $request->query('unit_address_id')))
             ->orderBy('id')
             ->get();
 
-        return response()->json($doctors->map(fn(Doctor $d) => [
-            'id'   => $d->id,
-            'name' => $d->user?->name,
+        // `specialty` permite ao bot conferir que listou a especialidade escolhida.
+        return response()->json($doctors->values()->map(fn (Doctor $d, int $i) => [
+            'option'    => $i + 1,
+            'id'        => $d->id,
+            'name'      => $d->user?->name,
+            'specialty' => $d->specialty?->name,
         ]));
     }
 

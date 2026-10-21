@@ -488,6 +488,28 @@ livres de hoje ou do próximo dia de atendimento do médico.
 - **Não verificado:** os endpoints contra banco real (sem driver aqui) e o comportamento do
   modelo com o prompt novo; ambos só numa conversa real depois do deploy.
 
+### Bug: bot listava o médico da especialidade errada (21/10/2026)
+
+Conversa real: o paciente escolheu "3" (Endocrinologia na lista exibida) e o bot mostrou a
+Dra. Carmem, que é Alergologia.
+
+- **Causa (execução 141):** o agente chamou `buscar_medicos` com `specialty_id: "3"` — o
+  número digitado pelo paciente, que é a **posição** na lista, e não o id da especialidade.
+  Posição e id quase nunca coincidem: posição 3 = Endocrinologia = **id 19**; o id 3 é
+  Alergologia. Posição 2 → id 2 nem existe. Na execução 140 o bot também listou as
+  especialidades **sem chamar a ferramenta** (de memória do Redis).
+- **Correção no backend:** `GET /api/bot/specialties` agora devolve `{option, id, name}` e a
+  lista de médicos por especialidade devolve `{option, id, name, specialty}` — `option` é a
+  posição exibida; `specialty` deixa o bot conferir se listou a especialidade escolhida.
+  Mudança só aditiva (os campos antigos continuam).
+- **Correção no prompt (rascunho `3a71fa7a`, não publicado):** regra "número digitado =
+  posição, use o `id` do item", com exemplo; regra de sempre chamar as ferramentas de
+  listas na conversa (sem reaproveitar memória); conferência do campo `specialty` ao listar
+  médicos. Funciona também com o backend antigo (cai para "posição na lista").
+- **Estado em produção:** a versão ativa do n8n (`d458aae0`) ainda tem o bug; a correção
+  entra ao publicar o rascunho, que depende do deploy do backend (junto da
+  disponibilidade de horários).
+
 ### Roteiro manual para fechar a Fase 3 (executado pelo usuário, sem acesso direto ao n8n de produção nesta sessão)
 
 1. **Duplicar o workflow, sem ativar.** Na UI do n8n, abrir `MeMedics - Bot Global
