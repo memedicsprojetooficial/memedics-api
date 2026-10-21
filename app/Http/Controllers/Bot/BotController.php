@@ -24,6 +24,9 @@ class BotController extends Controller
     // O bot só consulta e agenda até este número de meses à frente de hoje.
     private const MAX_MONTHS_AHEAD = 3;
 
+    // Tempo de atendimento usado quando o médico ainda não tem configuração (padrão da agenda web).
+    private const DEFAULT_SLOT_MINUTES = 20;
+
     private const WEEKDAYS = ['domingo', 'segunda-feira', 'terça-feira', 'quarta-feira', 'quinta-feira', 'sexta-feira', 'sábado'];
 
     // -------------------------------------------------------------------------
@@ -115,10 +118,7 @@ class BotController extends Controller
                         'key'         => $i->key,
                         'information' => $i->information,
                     ]),
-                'schedule_config' => $doctor->scheduleConfig ? [
-                    'id' => $doctor->scheduleConfig->id,
-                    'config' => $doctor->scheduleConfig->config,
-                ] : null,
+                'slot_minutes' => $this->slotMinutesFor($doctor),
             ]);
         }
 
@@ -146,13 +146,22 @@ class BotController extends Controller
     public function availableSlots(Request $request, Doctor $doctor): JsonResponse
     {
         $request->validate([
-            'date'     => ['required', 'date_format:Y-m-d', 'after_or_equal:' . $this->today()->toDateString(), 'before_or_equal:' . $this->lastBookableDate()->toDateString()],
-            'duration' => ['nullable', 'integer', 'min:15', 'max:120'],
+            'date' => ['required', 'date_format:Y-m-d', 'after_or_equal:' . $this->today()->toDateString(), 'before_or_equal:' . $this->lastBookableDate()->toDateString()],
         ], $this->dateRangeMessages());
 
-        $date        = Carbon::createFromFormat('Y-m-d', $request->query('date'), self::TIMEZONE)->startOfDay();
-        $slotMinutes = (int) $request->query('duration', 30);
-        $now         = Carbon::now(self::TIMEZONE);
+        $date = Carbon::createFromFormat('Y-m-d', $request->query('date'), self::TIMEZONE)->startOfDay();
+
+        return response()->json($this->slotsForDate($doctor, $date));
+    }
+
+    /**
+     * Horários livres de um dia, seguindo o tempo de atendimento do médico.
+     *
+     * @return string[]
+     */
+    private function slotsForDate(Doctor $doctor, Carbon $date): array
+    {
+        $now = Carbon::now(self::TIMEZONE);
 
         $workTimes = $doctor->workTimes()
             ->where('day_of_week', $date->dayOfWeek) // 0=Dom … 6=Sáb
@@ -165,9 +174,17 @@ class BotController extends Controller
             ->map(fn (Event $e) => $this->busyInterval($e))
             ->all();
 
-        return response()->json(
-            $this->computeSlots($workTimes, $busy, $slotMinutes, $date->isSameDay($now) ? $now : null)
-        );
+        return $this->computeSlots($workTimes, $busy, $this->slotMinutesFor($doctor), $date->isSameDay($now) ? $now : null);
+    }
+
+    /**
+     * Tempo de atendimento do médico em minutos (doctor_schedule_configs.slot_duration).
+     */
+    private function slotMinutesFor(Doctor $doctor): int
+    {
+        $duration = $doctor->scheduleConfig?->slot_duration;
+
+        return $duration ? $this->durationToMinutes($duration) : self::DEFAULT_SLOT_MINUTES;
     }
 
     /**
@@ -178,11 +195,11 @@ class BotController extends Controller
     public function nextAvailability(Request $request, Doctor $doctor): JsonResponse
     {
         $request->validate([
-            'days'     => ['nullable', 'integer', 'min:1', 'max:5'],
-            'duration' => ['nullable', 'integer', 'min:15', 'max:120'],
+            'days' => ['nullable', 'integer', 'min:1', 'max:5'],
         ]);
 
-        $now   = Carbon::now(self::TIMEZONE);
+        $slotMinutes = $this->slotMinutesFor($doctor);
+        $now         = Carbon::now(self::TIMEZONE);
         $first = $now->copy()->startOfDay();
         $last  = $this->lastBookableDate();
 
@@ -201,11 +218,12 @@ class BotController extends Controller
             $last,
             $now,
             (int) $request->query('days', 3),
-            (int) $request->query('duration', 30),
+            $slotMinutes,
         );
 
         return response()->json([
             'available'      => count($days) > 0,
+            'slot_minutes'   => $slotMinutes,
             'searched_until' => $last->toDateString(),
             'days'           => $days,
         ]);
@@ -397,7 +415,19 @@ class BotController extends Controller
             'user_id'   => ['required', 'exists:users,id'],
         ], $this->dateRangeMessages());
 
-        $input['duration'] = $input['duration'] ?? '00:30';
+        // A duração segue o tempo de atendimento do médico (o que o bot enviar é ignorado) e o
+        // horário precisa ser um dos livres da agenda dele.
+        $slotMinutes = $this->slotMinutesFor($doctor);
+        $date        = Carbon::createFromFormat('Y-m-d', $input['date'], self::TIMEZONE)->startOfDay();
+
+        if (! in_array($input['time'], $this->slotsForDate($doctor, $date), true)) {
+            return response()->json([
+                'message' => 'The given data was invalid.',
+                'errors'  => ['time' => ['Este horário não está livre na agenda do médico. Consulte os horários disponíveis novamente.']],
+            ], 422);
+        }
+
+        $input['duration'] = sprintf('%02d:%02d', intdiv($slotMinutes, 60), $slotMinutes % 60);
 
         $appointment = new Appointment($input);
         $appointment->save();

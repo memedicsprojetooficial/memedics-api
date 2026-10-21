@@ -510,6 +510,36 @@ Dra. Carmem, que é Alergologia.
   entra ao publicar o rascunho, que depende do deploy do backend (junto da
   disponibilidade de horários).
 
+### Horários e agendamento seguem o tempo de atendimento do médico (22/10/2026)
+
+Pedido: o bot deve mostrar horários e agendar conforme o tempo de atendimento de cada médico
+(que está no banco).
+
+- **Onde está:** `doctor_schedule_configs.slot_duration` (`00:15`, `00:20`, `00:30`, `00:45` ou
+  `01:00`), o mesmo valor que a agenda web usa para a grade; sem configuração, a agenda web
+  assume 20 min.
+- **Problema:** o bot tinha **30 min fixo** em três pontos — grade de `available-slots`,
+  `next-availability` e a duração gravada no agendamento (o agente enviava `00:30`). Para um
+  médico configurado com 20 min, os horários mostrados não batiam com a agenda dele.
+- **Correção (backend, `BotController`):** `slotMinutesFor()` lê o tempo do médico (padrão 20
+  se não houver config) e é usado na grade de horários, em `next-availability` (que agora
+  devolve também `slot_minutes`) e na criação do agendamento. `duration` não é mais
+  aceito do bot: o servidor grava o tempo do médico. **Novo:** o agendamento só é aceito se
+  o `time` for um horário livre da agenda do médico naquele dia (422 caso contrário) —
+  barra dupla marcação e horário inventado pelo agente. Também corrigido
+  `schedule_config` em `doctors?doctor_id=`, que devolvia `config: null` (campo
+  inexistente); agora devolve `slot_minutes`.
+- **Testes:** lógica pura com 25 casos sem banco (grades de 20/45/60 min, ocupados de
+  durações diferentes, duração gravada, limite de 3 meses, fuso) — todos passam.
+- **n8n (rascunho `b2d390b5`, não publicado):** `criar_agendamento` não envia mais
+  `duration`; prompt diz para mostrar exatamente os horários retornados (`slot_minutes`).
+  Compatível com o backend antigo, mas só faz sentido junto do deploy.
+- **Estado de produção:** o backend no ar ainda é o anterior (resposta sem `slot_minutes`,
+  horários de 30 em 30). A versão ativa do n8n é `3a71fa7a` (publicada fora desta sessão),
+  compatível com ele.
+- **Não verificado:** o `slot_duration` real de cada médico em produção (a configuração
+  não é legível pela chave do bot) e os endpoints contra banco real.
+
 ### Roteiro manual para fechar a Fase 3 (executado pelo usuário, sem acesso direto ao n8n de produção nesta sessão)
 
 1. **Duplicar o workflow, sem ativar.** Na UI do n8n, abrir `MeMedics - Bot Global
