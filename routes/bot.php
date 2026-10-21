@@ -27,6 +27,9 @@ Route::middleware('bot.key')->prefix('bot')->group(function () {
     // Horários disponíveis  →  ?date=Y-m-d&duration=30
     Route::get('/doctors/{doctor}/available-slots', [BotController::class, 'availableSlots']);
 
+    // Próximos dias com horário livre do médico (até 3 meses à frente)
+    Route::get('/doctors/{doctor}/next-availability', [BotController::class, 'nextAvailability']);
+
     // Buscar paciente por telefone  →  ?phone=X
     Route::get('/patients/find', [BotController::class, 'findPatient']);
 

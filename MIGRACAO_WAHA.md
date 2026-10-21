@@ -433,6 +433,61 @@ WhatsApp da unidade.
   o `GET /api/sessions/{name}` da WAHA devolver `config` — sem sessão pareada não deu para
   confirmar.
 
+### Bug: agente não entendia datas — "quarta dia 28" (21/10/2026)
+
+Primeira conversa real com o bot (sessão pareada). O paciente escolheu o Dr. Gustavo Luiz
+e pediu "Quarta dia 28", "28/10" e "Próxima quarta-feira"; o bot respondeu que a data era
+inválida e, na 3ª falha, escalou para humano.
+
+- **Causa:** nas execuções 130–132 o agente chamou `buscar_horarios` com o **ano errado**
+  (`date=2024-03-28`, `2024-10-28`, `2024-06-26`) e o backend devolveu 422 ("a data deve
+  ser igual ou posterior a hoje"). A data atual existia no prompt só uma vez, enterrada na
+  seção da ferramenta, como timestamp cru (`2026-10-21T16:39:58-03:00`), sem dia da
+  semana — o modelo usou o ano que "conhece". E a mensagem de erro do backend nunca
+  chegava ao agente (o n8n só repassava "request is invalid"), então ele não conseguia se
+  corrigir.
+- **Correção (versão ativa `d458aae0`, anterior `e0abab68`):** (1) no topo do prompt do
+  `Claudia`, data/hora atuais por extenso e um **calendário dos próximos 28 dias** com
+  dia da semana → `YYYY-MM-DD`, gerado por `$now` (sem depender de referência a outro
+  nó); (2) `buscar_horarios`: `$fromAI("date", ...)` agora descreve o formato e manda usar
+  o calendário; (3) `buscar_horarios` e `criar_agendamento` com `neverError`, para o agente
+  ler o erro de validação do backend e tentar de novo. Expressão do calendário validada
+  no n8n com um nó temporário (removido) antes de publicar.
+- **Efeito colateral a limpar:** ao escalar, a sessão do número de teste
+  (`5521981321890`) ficou em `mode: human`, e nesse modo o bot não responde. Para
+  retestar é preciso devolvê-la para `bot` (`PATCH /api/bot/sessions/{phone}` com
+  `{"mode":"bot"}` ou `DELETE`, que também limpa o histórico).
+- **Não verificado:** o comportamento do modelo com o prompt novo (só dá para ver numa
+  conversa real); os testes simulados cobrem a mecânica do fluxo, não a resposta do LLM.
+
+### Agendamento: limite de 3 meses e horários já na primeira resposta (21/10/2026)
+
+Pedido: (1) o bot só consulta/agenda até 3 meses à frente de hoje; sem vaga nesse período →
+transferir para humano; (2) o bot **não pergunta o dia**: mostra direto os dias e horários
+livres de hoje ou do próximo dia de atendimento do médico.
+
+- **Backend (`BotController`):** novo `GET /api/bot/doctors/{doctor}/next-availability`
+  (`?days=1..5`, padrão 3) → `{available, searched_until, days:[{date, weekday, slots}]}`;
+  calcula no servidor os próximos dias com vaga (hoje inclusive, só horários que ainda não
+  começaram) até hoje+3 meses. `available-slots` e `POST .../appointments` passaram a
+  **rejeitar** datas passadas ou além de 3 meses (422 com mensagem em português). A
+  lógica de horários virou métodos puros, testados sem banco: 14 casos (fatiamento,
+  ocupados, descarte de horários passados hoje, dia lotado, limite de 3 meses inclusivo,
+  médico sem expediente, fuso).
+- **Fuso:** o app roda em UTC; "hoje" e o limite usam `America/Sao_Paulo` explicitamente
+  (depois das 21h de Brasília o "hoje" do servidor já é amanhã — o `after_or_equal:today`
+  antigo rejeitava "hoje" à noite).
+- **Decisão de produto:** o bot mostra **até 3 dias** com vaga (não só o primeiro), para o
+  paciente já poder escolher entre eles sem o bot perguntar a data. `buscar_horarios`
+  ficou só para quando o paciente pedir outra data.
+- **n8n (rascunho `097660a0`, NÃO publicado; ativa continua `d458aae0`):** nova ferramenta
+  `buscar_proxima_disponibilidade` ligada ao `Claudia`; prompt reescrito (limite de 3 meses
+  com data calculada, "não pergunte a data", escalar quando `available: false`, fluxo de
+  referência atualizado). Só publicar **depois do deploy do backend** — o prompt novo chama
+  um endpoint que ainda não existe em produção.
+- **Não verificado:** os endpoints contra banco real (sem driver aqui) e o comportamento do
+  modelo com o prompt novo; ambos só numa conversa real depois do deploy.
+
 ### Roteiro manual para fechar a Fase 3 (executado pelo usuário, sem acesso direto ao n8n de produção nesta sessão)
 
 1. **Duplicar o workflow, sem ativar.** Na UI do n8n, abrir `MeMedics - Bot Global

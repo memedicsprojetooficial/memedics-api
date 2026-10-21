@@ -18,6 +18,14 @@ use Illuminate\Http\Request;
 
 class BotController extends Controller
 {
+    // O app roda em UTC; "hoje" e o limite de agendamento valem no horário de Brasília.
+    private const TIMEZONE = 'America/Sao_Paulo';
+
+    // O bot só consulta e agenda até este número de meses à frente de hoje.
+    private const MAX_MONTHS_AHEAD = 3;
+
+    private const WEEKDAYS = ['domingo', 'segunda-feira', 'terça-feira', 'quarta-feira', 'quinta-feira', 'sexta-feira', 'sábado'];
+
     // -------------------------------------------------------------------------
     // Especialidades
     // -------------------------------------------------------------------------
@@ -130,33 +138,114 @@ class BotController extends Controller
     public function availableSlots(Request $request, Doctor $doctor): JsonResponse
     {
         $request->validate([
-            'date'     => ['required', 'date_format:Y-m-d', 'after_or_equal:today'],
+            'date'     => ['required', 'date_format:Y-m-d', 'after_or_equal:' . $this->today()->toDateString(), 'before_or_equal:' . $this->lastBookableDate()->toDateString()],
+            'duration' => ['nullable', 'integer', 'min:15', 'max:120'],
+        ], $this->dateRangeMessages());
+
+        $date        = Carbon::createFromFormat('Y-m-d', $request->query('date'), self::TIMEZONE)->startOfDay();
+        $slotMinutes = (int) $request->query('duration', 30);
+        $now         = Carbon::now(self::TIMEZONE);
+
+        $workTimes = $doctor->workTimes()
+            ->where('day_of_week', $date->dayOfWeek) // 0=Dom … 6=Sáb
+            ->get();
+
+        // Eventos já existentes nesse dia (appointments + bloqueios)
+        $busy = $doctor->events()
+            ->whereDate('date', $date->toDateString())
+            ->get(['time', 'duration'])
+            ->map(fn (Event $e) => $this->busyInterval($e))
+            ->all();
+
+        return response()->json(
+            $this->computeSlots($workTimes, $busy, $slotMinutes, $date->isSameDay($now) ? $now : null)
+        );
+    }
+
+    /**
+     * Próximos dias com horário livre do médico (a partir de hoje), dentro do limite
+     * de MAX_MONTHS_AHEAD meses. Se `available` vier false, não há vaga no período e o
+     * paciente deve ser transferido para o atendimento humano.
+     */
+    public function nextAvailability(Request $request, Doctor $doctor): JsonResponse
+    {
+        $request->validate([
+            'days'     => ['nullable', 'integer', 'min:1', 'max:5'],
             'duration' => ['nullable', 'integer', 'min:15', 'max:120'],
         ]);
 
-        $date         = Carbon::createFromFormat('Y-m-d', $request->query('date'));
-        $slotMinutes  = (int) $request->query('duration', 30);
-        $dayOfWeek    = (int) $date->dayOfWeek; // 0=Dom … 6=Sáb
+        $now   = Carbon::now(self::TIMEZONE);
+        $first = $now->copy()->startOfDay();
+        $last  = $this->lastBookableDate();
 
-        $workTimes = $doctor->workTimes()
-            ->where('day_of_week', $dayOfWeek)
-            ->get();
+        $workByDay = $doctor->workTimes()->get()->groupBy('day_of_week');
 
-        if ($workTimes->isEmpty()) {
-            return response()->json([]);
-        }
+        $busyByDate = $doctor->events()
+            ->whereBetween('date', [$first->toDateString(), $last->toDateString()])
+            ->get(['date', 'time', 'duration'])
+            ->groupBy(fn (Event $e) => substr($e->getRawOriginal('date'), 0, 10))
+            ->map(fn ($events) => $events->map(fn (Event $e) => $this->busyInterval($e))->all());
 
-        // Eventos já existentes nesse dia (appointments + bloqueios)
-        $busyTimes = $doctor->events()
-            ->whereDate('date', $date->toDateString())
-            ->get(['time', 'duration'])
-            ->map(fn(Event $e) => [
-                'start' => Carbon::parse($e->getRawOriginal('time')),
-                'end'   => Carbon::parse($e->getRawOriginal('time'))
-                    ->addMinutes($this->durationToMinutes($e->getRawOriginal('duration'))),
-            ]);
+        $days = $this->findOpenDays(
+            $workByDay,
+            $busyByDate,
+            $first,
+            $last,
+            $now,
+            (int) $request->query('days', 3),
+            (int) $request->query('duration', 30),
+        );
 
-        $slots = [];
+        return response()->json([
+            'available'      => count($days) > 0,
+            'searched_until' => $last->toDateString(),
+            'days'           => $days,
+        ]);
+    }
+
+    private function today(): Carbon
+    {
+        return Carbon::now(self::TIMEZONE)->startOfDay();
+    }
+
+    private function lastBookableDate(): Carbon
+    {
+        return $this->today()->addMonthsNoOverflow(self::MAX_MONTHS_AHEAD);
+    }
+
+    private function dateRangeMessages(): array
+    {
+        return [
+            'date.after_or_equal'  => 'A data não pode ser anterior a hoje.',
+            'date.before_or_equal' => 'Só é possível consultar e agendar até :date (' . self::MAX_MONTHS_AHEAD . ' meses a partir de hoje).',
+        ];
+    }
+
+    /**
+     * @return array{start: Carbon, end: Carbon}
+     */
+    private function busyInterval(Event $e): array
+    {
+        $start = Carbon::parse($e->getRawOriginal('time'));
+
+        return [
+            'start' => $start,
+            'end'   => $start->copy()->addMinutes($this->durationToMinutes($e->getRawOriginal('duration'))),
+        ];
+    }
+
+    /**
+     * Horários livres de um dia (lógica pura, sem banco).
+     *
+     * @param iterable $workTimes   itens com start_time/end_time ('H:i:s') do dia da semana
+     * @param array    $busy        intervalos ocupados, de busyInterval()
+     * @param Carbon|null $notBefore quando for hoje, descarta horários que já começaram
+     * @return string[] horários 'H:i'
+     */
+    private function computeSlots(iterable $workTimes, array $busy, int $slotMinutes, ?Carbon $notBefore = null): array
+    {
+        $minStart = $notBefore ? Carbon::createFromFormat('H:i:s', $notBefore->format('H:i:s')) : null;
+        $slots    = [];
 
         foreach ($workTimes as $wt) {
             $cursor = Carbon::createFromFormat('H:i:s', $wt->start_time);
@@ -166,11 +255,11 @@ class BotController extends Controller
                 $slotStart = $cursor->copy();
                 $slotEnd   = $cursor->copy()->addMinutes($slotMinutes);
 
-                $busy = $busyTimes->first(function ($bt) use ($slotStart, $slotEnd) {
-                    return $slotStart->lt($bt['end']) && $slotEnd->gt($bt['start']);
-                });
+                $isBusy = collect($busy)->contains(
+                    fn ($b) => $slotStart->lt($b['end']) && $slotEnd->gt($b['start'])
+                );
 
-                if (! $busy) {
+                if (! $isBusy && (! $minStart || $slotStart->gt($minStart))) {
                     $slots[] = $slotStart->format('H:i');
                 }
 
@@ -178,7 +267,46 @@ class BotController extends Controller
             }
         }
 
-        return response()->json($slots);
+        sort($slots);
+
+        return array_values(array_unique($slots));
+    }
+
+    /**
+     * Percorre os dias de $first a $last e devolve os primeiros $wanted com vaga.
+     *
+     * @param \Illuminate\Support\Collection $workByDay  day_of_week => horários de atendimento
+     * @param \Illuminate\Support\Collection $busyByDate 'Y-m-d' => intervalos ocupados
+     * @return array<int, array{date: string, weekday: string, slots: string[]}>
+     */
+    private function findOpenDays($workByDay, $busyByDate, Carbon $first, Carbon $last, Carbon $now, int $wanted, int $slotMinutes): array
+    {
+        $days = [];
+
+        for ($day = $first->copy(); $day->lte($last) && count($days) < $wanted; $day->addDay()) {
+            $workTimes = $workByDay->get($day->dayOfWeek);
+
+            if (! $workTimes) {
+                continue;
+            }
+
+            $slots = $this->computeSlots(
+                $workTimes,
+                $busyByDate->get($day->toDateString(), []),
+                $slotMinutes,
+                $day->isSameDay($now) ? $now : null,
+            );
+
+            if ($slots) {
+                $days[] = [
+                    'date'    => $day->toDateString(),
+                    'weekday' => self::WEEKDAYS[$day->dayOfWeek],
+                    'slots'   => $slots,
+                ];
+            }
+        }
+
+        return $days;
     }
 
     // -------------------------------------------------------------------------
@@ -251,7 +379,7 @@ class BotController extends Controller
     public function createAppointment(Request $request, Doctor $doctor): JsonResponse
     {
         $input = $request->validate([
-            'date'       => ['required', 'string', 'date_format:Y-m-d'],
+            'date'       => ['required', 'string', 'date_format:Y-m-d', 'after_or_equal:' . $this->today()->toDateString(), 'before_or_equal:' . $this->lastBookableDate()->toDateString()],
             'time'       => ['required', 'string', 'date_format:H:i'],
             'duration'   => ['nullable', 'string', 'date_format:H:i'],
             'patient_id' => ['required', 'exists:patients,id'],
@@ -259,7 +387,7 @@ class BotController extends Controller
             'type'       => ['required', 'string', 'in:first,default,return,free,online,medical-fitting,procedure,exam'],
             'comment'    => ['nullable', 'string', 'max:255'],
             'user_id'   => ['required', 'exists:users,id'],
-        ]);
+        ], $this->dateRangeMessages());
 
         $input['duration'] = $input['duration'] ?? '00:30';
 
