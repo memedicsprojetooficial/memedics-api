@@ -17,6 +17,7 @@ class DoctorScheduleConfigResource extends JsonResource
             'doctor_id'           => $this->doctor_id,
             'slot_duration'       => $this->slot_duration,
             'slot_label_interval' => $this->slot_label_interval,
+            'confirmation_days_before' => $this->confirmation_days_before,
         ];
     }
 }

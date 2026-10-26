@@ -589,6 +589,36 @@ WAHA (`WORKING`) e envia o texto com o link `FRONTEND_URL/confirmar-consulta/{to
   o domínio da API, e fica quebrado) e o envio real — ambos só com um teste de ponta a ponta.
 - **Observação:** a versão ativa do n8n mudou para `6a6a786b` (publicada fora desta sessão).
 
+### Envio automático da confirmação de consulta (26/10/2026)
+
+Pedido: enviar a confirmação automaticamente X dias antes da consulta, com X configurável por
+médico, e com os envios espaçados para não arriscar bloqueio do número. Antes não existia
+nenhum envio automático (agendador do Laravel vazio, sem job, só o workflow do bot no n8n).
+
+- **Decisões do usuário:** médico sem configuração = desligado; rodada diária às 9h (Brasília).
+- **Configuração por médico:** `doctor_schedule_configs.confirmation_days_before` (nulo =
+  desligado; 1–15). Editável na tela do médico, card "Configuração do calendário" (1 a 7 dias
+  ou Desligado). Migration `2026_10_26_120000`.
+- **Backend:** a lógica do botão manual virou `AppointmentConfirmationService` (mesma
+  mensagem, mesmas verificações, mesmos erros/códigos); o botão continua igual. Novos
+  endpoints do bot: `GET /api/bot/appointments/confirmations/due` (consultas com status 1
+  "Agendado" de médicos com envio ligado, entre amanhã e hoje + N dias, em ordem) e
+  `POST /api/bot/appointments/{id}/send-confirmation` (`id` = id do evento, como nas demais
+  rotas; reconfere status e data antes de enviar; 409 se não está mais pendente).
+- **Por que janela e não "exatamente N dias antes":** quem agendou depois da rodada, ou ficou
+  de fora por falha (WhatsApp desconectado, por ex.), entra na rodada seguinte. Não duplica:
+  depois de enviado o status vira 13 e sai da lista.
+- **Disparo e espaçamento (n8n, workflow `fKvJsFXHB2yTUbKs`, pasta "Bot", INATIVO):** gatilho
+  às 9h → busca as devidas → uma por vez → envia → espera aleatória de 45–90 s → próxima.
+  O n8n controla o ritmo porque o lote pode levar quase uma hora (longo demais para uma
+  requisição só à API), e não há cron do Laravel confirmado em produção.
+- **Testes:** serviço com WAHA simulada e janela de devidas — 19 casos sem banco; workflow
+  testado no n8n com dados fixados (sem enviar WhatsApp).
+- **Para ligar:** deploy do backend + migration; vincular a sessão à unidade
+  (`waha_session_name = 'global-office-2'`, pendência da verificação do envio manual);
+  configurar os dias nos médicos; ativar o workflow.
+- **Não verificado:** os endpoints contra banco real e um envio real.
+
 ### Roteiro manual para fechar a Fase 3 (executado pelo usuário, sem acesso direto ao n8n de produção nesta sessão)
 
 1. **Duplicar o workflow, sem ativar.** Na UI do n8n, abrir `MeMedics - Bot Global

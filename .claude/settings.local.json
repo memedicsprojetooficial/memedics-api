@@ -312,7 +312,11 @@
       "mcp__e111a759-9e7f-4632-a707-4acce7ce16e7__search_workflows",
       "Bash(curl -s --max-time 30 -o /dev/null -w \"POST /webhook/global-office-bot -> HTTP %{http_code}\\\\n\" -X POST -H \"Content-Type: application/json\" -d '{\"event\":\"ping\",\"session\":\"verificacao\"}' https://n8n.memedics.com.br/webhook/global-office-bot)",
       "Bash(curl -s --max-time 30 -o /dev/null -w \"POST /webhook-test/global-office-bot -> HTTP %{http_code}\\\\n\" -X POST -H \"Content-Type: application/json\" -d '{\"event\":\"ping\"}' https://n8n.memedics.com.br/webhook-test/global-office-bot)",
-      "Bash(rm -f /tmp/tsc_out.txt)"
+      "Bash(rm -f /tmp/tsc_out.txt)",
+      "Bash(cd /mnt/c/Users/Robson/Desktop/frontend-web/memedics-web && grep -n \"scheduleConfig\\\\|slotDuration\\\\|slotLabelInterval\\\\|updateScheduleConfig\\\\|getScheduleConfig\" src/routes/_authenticated/doctor.\\\\$doctorId.tsx | head -30; echo \"----\"; sed -n 840,905p src/routes/_authenticated/doctor.\\\\$doctorId.tsx)",
+      "Bash(cd /home/masterdba6/projetos/memedics-api && grep -n \"schedule_config\\\\|scheduleConfig\" app/Http/Resources/DoctorResource.php app/Http/Controllers/DoctorController.php | head; cd /mnt/c/Users/Robson/Desktop/frontend-web/memedics-web && echo \"== api.ts ==\"; grep -n \"schedule_config\\\\|slot_label_interval\\\\|updateScheduleConfig\\\\|getScheduleConfig\" src/lib/api.ts; echo \"== types ==\"; grep -n \"interface DoctorScheduleConfig\" -A 6 src/lib/types.ts; echo \"== estado do form ==\"; sed -n 822,838p src/routes/_authenticated/doctor.\\\\$doctorId.tsx)",
+      "Bash(grep -E 'doctor\\\\.\\\\$doctorId\\\\.tsx|lib/api\\\\.ts|lib/types\\\\.ts' /tmp/tsc2.txt)",
+      "Bash(rm -f /tmp/tsc2.txt)"
     ]
   }
 }

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Bot\BotController;
 use App\Http\Controllers\Bot\BotSessionController;
+use App\Http\Controllers\Bot\ConfirmationController;
 use App\Http\Controllers\Bot\CsatController;
 use App\Http\Controllers\Bot\WhatsappWhiteListController;
 use Illuminate\Support\Facades\Route;
@@ -44,6 +45,10 @@ Route::middleware('bot.key')->prefix('bot')->group(function () {
 
     // Confirmar / cancelar agendamento
     Route::patch('/appointments/{appointment}/status', [BotController::class, 'updateAppointmentStatus']);
+
+    // Confirmação automática de consultas: o n8n busca as devidas e envia uma a uma, espaçadas
+    Route::get('/appointments/confirmations/due', [ConfirmationController::class, 'due']);
+    Route::post('/appointments/{appointment}/send-confirmation', [ConfirmationController::class, 'send']);
 
     // Unidade da sessão da WAHA + estado de pausa do bot
     Route::get('/units/by-session/{session}', [BotController::class, 'unitBySession']);

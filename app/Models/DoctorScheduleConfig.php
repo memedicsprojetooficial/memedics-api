@@ -14,6 +14,7 @@ class DoctorScheduleConfig extends Model
         'doctor_id',
         'slot_duration',
         'slot_label_interval',
+        'confirmation_days_before',
     ];
 
     public function doctor(): BelongsTo
