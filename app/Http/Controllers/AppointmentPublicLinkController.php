@@ -74,13 +74,15 @@ class AppointmentPublicLinkController extends Controller
 
     private function normalizePhone(?string $phone): ?string
     {
-        $digits = preg_replace('/\D/', '', $phone ?? '');
+        $digits = ltrim(preg_replace('/\D/', '', $phone ?? ''), '0');
 
         if ($digits === '') {
             return null;
         }
 
-        return str_starts_with($digits, '55') ? $digits : "55{$digits}";
+        // Nacional tem 10–11 dígitos (DDD + número). Só considera que o DDI 55 já está presente
+        // com 12–13 dígitos — senão um DDD 55 (RS) seria confundido com o DDI.
+        return strlen($digits) >= 12 && str_starts_with($digits, '55') ? $digits : "55{$digits}";
     }
 
     private function buildMessage(Appointment $appointment, string $url): string

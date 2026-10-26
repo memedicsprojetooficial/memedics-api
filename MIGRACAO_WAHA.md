@@ -540,6 +540,55 @@ Pedido: o bot deve mostrar horários e agendar conforme o tempo de atendimento d
 - **Não verificado:** o `slot_duration` real de cada médico em produção (a configuração
   não é legível pela chave do bot) e os endpoints contra banco real.
 
+### Mensagem do médico e dos horários mais apresentável (22/10/2026)
+
+Conversa real: a ficha do médico e os horários saíam numa única mensagem de ~1.100
+caracteres, que o WhatsApp cortava em "Read more" antes de chegar nos horários; os dias de
+atendimento ocupavam uma linha por período e os horários vinham como `08:00 | 08:30 | …`.
+
+- **Duas mensagens:** o prompt manda separar ficha e horários com uma linha `[[MSG]]`; o nó
+  novo `Dividir mensagens` (após `salva_sessao`) divide nesse marcador e o `Send text message`
+  envia uma mensagem por item (1 s entre elas, `batching`). Se o agente esquecer o marcador,
+  sai uma mensagem só (comportamento antigo). O histórico salvo em `salva_sessao` troca o
+  marcador por quebra de linha.
+- **Ficha:** uma linha por dia (`Seg: 8h às 12h e 14h às 17h`), sem "Manhã/Tarde", horários
+  no estilo `8h30`, seções "Planos e valores", "Dias de atendimento" e "Importante".
+- **Horários:** agrupados por dia (`*Seg, 26/10*` e, abaixo, `8h · 8h30 · 9h`), com a linha
+  "Consultas de N min" quando `slot_minutes` vier. O agente converte `9h30` de volta para
+  `09:30` ao agendar.
+- **Testado** (dados simulados, sem WhatsApp): resposta com marcador vira 2 mensagens de
+  ~300 caracteres, idênticas às enviadas pelo agente, sem marcador no texto nem no histórico.
+- **Publicado:** versão ativa `5e457b70` (inclui também o rascunho de duração do médico,
+  compatível com o backend antigo — sem `duration` o backend usa 30 min até o deploy).
+- **Não controlável:** o WhatsApp sublinha por conta própria datas (`26/10`) e valores
+  (`R$ 500,00`) no Android; o estilo `8h30` deve reduzir o sublinhado dos horários.
+- **Não verificado:** o texto que o modelo realmente gera com o prompt novo e a ordem das
+  duas mensagens no WhatsApp real.
+
+### Verificação do envio de confirmação de consulta (26/10/2026)
+
+Fluxo: botão "Enviar Confirmação" (detalhe do agendamento) → `POST /api/appointments/{id}/public-link`
+→ `AppointmentPublicLinkController` gera o token, acha a unidade do médico, confere a sessão da
+WAHA (`WORKING`) e envia o texto com o link `FRONTEND_URL/confirmar-consulta/{token}` → status
+13 (Aguardando Confirmação) → paciente abre a página pública e confirma (status 2) ou cancela (7).
+
+- **OK:** tela (botão desabilita sem telefone; mostra o erro do backend), página pública
+  (no ar em `app.memedics.com.br` e `www.memedics.com.br`), endpoints públicos (`GET` com token
+  inválido → 404), bloqueio de status finais, sessão da WAHA `global-office-2` em `WORKING`.
+- **BLOQUEIO — sessão não vinculada à unidade:** `GET /api/bot/units/by-session/global-office-2`
+  → 404. Nenhuma unidade tem `waha_session_name = 'global-office-2'` (a sessão foi criada direto
+  na WAHA, não pela tela). Como o envio localiza a sessão por esse campo, **hoje a confirmação
+  não sai** (erro "unidade não possui WhatsApp conectado" ou erro da WAHA, conforme o valor
+  atual do campo). O mesmo vínculo é usado pela **pausa do bot** e pelo `unitAddressId` dinâmico
+  do n8n — sem ele, a pausa não tem efeito. Correção: gravar `waha_session_name =
+  'global-office-2'` na unidade 2 (não exige parear de novo).
+- **Bug corrigido:** `normalizePhone` tratava telefone com DDD 55 (RS) como se já tivesse o DDI
+  (`(55) 99999-8888` virava `55999998888`, número errado). Agora só considera o DDI presente com
+  12–13 dígitos; também remove zero à esquerda. 10 formatos testados.
+- **Não verificado:** o valor de `FRONTEND_URL` em produção (se faltar, o link cai em `APP_URL`,
+  o domínio da API, e fica quebrado) e o envio real — ambos só com um teste de ponta a ponta.
+- **Observação:** a versão ativa do n8n mudou para `6a6a786b` (publicada fora desta sessão).
+
 ### Roteiro manual para fechar a Fase 3 (executado pelo usuário, sem acesso direto ao n8n de produção nesta sessão)
 
 1. **Duplicar o workflow, sem ativar.** Na UI do n8n, abrir `MeMedics - Bot Global
