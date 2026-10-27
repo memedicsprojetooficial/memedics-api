@@ -30,6 +30,7 @@ use App\Http\Controllers\DoctorPlanController;
 use App\Http\Controllers\DoctorInformationController;
 use App\Http\Controllers\UnitBotController;
 use App\Http\Controllers\WahaController;
+use App\Http\Controllers\WhatsappWhiteListController;
 use App\Http\Controllers\DoctorScheduleConfigController;
 use App\Http\Controllers\WorkTimeController;
 use App\Http\Resources\UserResource;
@@ -201,6 +202,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/doctors/{doctor}/schedule-config', [DoctorScheduleConfigController::class, 'update']);
 
     Route::get('cids', [CIDController::class, 'index']);
+
+    // ── Whitelist do bot (números que o bot não responde) ────────────────────────
+    Route::prefix('whatsapp-white-lists')->middleware('can:manage-whatsapp')->group(function () {
+        Route::get('/',                      [WhatsappWhiteListController::class, 'index']);
+        Route::get('/check',                 [WhatsappWhiteListController::class, 'check']);
+        Route::post('/',                     [WhatsappWhiteListController::class, 'store']);
+        Route::delete('/{whatsappWhiteList}', [WhatsappWhiteListController::class, 'destroy']);
+    });
 
     // ── WAHA (WhatsApp) ────────────────────────────────────────────────────────
     Route::prefix('waha')->middleware('can:manage-whatsapp')->group(function () {

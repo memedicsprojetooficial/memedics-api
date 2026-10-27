@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Events\ScheduleUpdated;
 use App\Exceptions\ConfirmationNotSent;
 use App\Models\Appointment;
+use App\Support\PhoneNumber;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
 use RuntimeException;
@@ -39,7 +40,7 @@ class AppointmentConfirmationService
             throw new ConfirmationNotSent('Esta unidade não possui WhatsApp conectado. Configure em Configurações → Unidades.', 404);
         }
 
-        $number = $this->normalizePhone($appointment->patient->phone ?? null);
+        $number = PhoneNumber::forWhatsapp($appointment->patient->phone ?? null);
 
         if (!$number) {
             throw new ConfirmationNotSent('Paciente sem telefone cadastrado.', 422);
@@ -62,19 +63,6 @@ class AppointmentConfirmationService
 
         $appointment->update(['status' => self::AWAITING_CONFIRMATION_STATUS]);
         ScheduleUpdated::dispatch($appointment->event->doctor);
-    }
-
-    public function normalizePhone(?string $phone): ?string
-    {
-        $digits = ltrim(preg_replace('/\D/', '', $phone ?? ''), '0');
-
-        if ($digits === '') {
-            return null;
-        }
-
-        // Nacional tem 10–11 dígitos (DDD + número). Só considera que o DDI 55 já está presente
-        // com 12–13 dígitos — senão um DDD 55 (RS) seria confundido com o DDI.
-        return strlen($digits) >= 12 && str_starts_with($digits, '55') ? $digits : "55{$digits}";
     }
 
     private function buildMessage(Appointment $appointment, string $url): string

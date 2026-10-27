@@ -619,6 +619,30 @@ nenhum envio automático (agendador do Laravel vazio, sem job, só o workflow do
   configurar os dias nos médicos; ativar o workflow.
 - **Não verificado:** os endpoints contra banco real e um envio real.
 
+### Tela da whitelist do bot e botão no perfil do médico (26/10/2026)
+
+Pedido: uma tela para gerenciar a whitelist (contatos que o bot não responde) e, no perfil do
+médico, um botão ao lado do telefone para adicioná-lo à lista.
+
+- **Antes:** a tabela `whatsapp_white_lists` (`phone` único, `name`, `description`) só era lida
+  pelo bot (`GET /api/bot/whatsapp-white-lists`); números eram inseridos direto no banco, sem
+  normalização — foi o que causou o bug do número sem DDI de 24/09 (risco que ficou registrado
+  acima).
+- **Backend:** CRUD admin (`can:manage-whatsapp`) em `/api/whatsapp-white-lists` — listar,
+  adicionar, remover e `check?phone=` (se um telefone, em qualquer formato, já está na lista).
+  O telefone é gravado **sempre** no formato que o n8n compara (só dígitos, com DDI 55), via
+  `App\Support\PhoneNumber::forWhatsapp()` — o mesmo normalizador agora usado pelo envio de
+  confirmação (tratamento do DDD 55 incluído). Rejeita telefone inválido e duplicado (422).
+- **Frontend:** nova tela "Whitelist do bot" (menu Configurações, só administradores) com
+  lista, adicionar (nome, telefone, descrição) e remover; no perfil do médico, ao lado do
+  telefone, botão "Adicionar à whitelist" (vira o selo "Na whitelist" quando já estiver).
+- **Bot:** nada mudou no n8n — ele já ignora quem está na lista (`Está na Whitelist?` →
+  `No Operation`); a diferença é que agora o número sempre fica no formato certo.
+- **Testes:** normalizador e validação (telefone inválido, nome obrigatório) sem banco — 10
+  casos; regressão do envio de confirmação — 19 casos; frontend sem erros de tipo novos, build
+  ok e rota nova no `routeTree.gen.ts`.
+- **Não verificado:** a tela no navegador e as rotas contra o banco real.
+
 ### Roteiro manual para fechar a Fase 3 (executado pelo usuário, sem acesso direto ao n8n de produção nesta sessão)
 
 1. **Duplicar o workflow, sem ativar.** Na UI do n8n, abrir `MeMedics - Bot Global
