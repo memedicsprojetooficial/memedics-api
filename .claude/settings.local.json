@@ -325,7 +325,8 @@
       "Bash(grep -E 'whitelist\\\\.tsx|_authenticated\\\\.tsx|doctor\\\\.\\\\$doctorId\\\\.tsx|lib/api\\\\.ts|lib/types\\\\.ts|routeTree' /tmp/tsc3.txt)",
       "Bash(curl -s --max-time 20 \"https://api.memedics.com.br/api/public/appointments/token-inexistente\")",
       "Bash(curl -s --max-time 20 -H \"Accept: application/json\" \"https://api.memedics.com.br/api/public/appointments/token-inexistente\")",
-      "Bash(php -l app/Http/Controllers/WhatsappWhiteListController.php)"
+      "Bash(php -l app/Http/Controllers/WhatsappWhiteListController.php)",
+      "Bash(curl -s -o /dev/null -D - -X POST https://api.memedics.com.br/api/appointments/0/public-link -H 'Accept: application/json')"
     ]
   }
 }

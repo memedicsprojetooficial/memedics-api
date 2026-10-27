@@ -46,6 +46,10 @@ class AppointmentConfirmationService
             throw new ConfirmationNotSent('Paciente sem telefone cadastrado.', 422);
         }
 
+        if (!PhoneNumber::isComplete($number)) {
+            throw new ConfirmationNotSent('Telefone do paciente incompleto. Corrija o cadastro informando DDD e número.', 422);
+        }
+
         try {
             $status = $this->waha->getStatus($unit->waha_session_name);
 
@@ -58,7 +62,9 @@ class AppointmentConfirmationService
 
             $this->waha->sendLinkMessage($unit->waha_session_name, $number, $this->buildMessage($appointment, $url));
         } catch (RuntimeException $e) {
-            throw new ConfirmationNotSent($e->getMessage(), 502);
+            // 422, não 502: o nginx de produção troca respostas 5xx pela página HTML de erro
+            // e o atendente perderia a mensagem.
+            throw new ConfirmationNotSent("Não foi possível enviar pelo WhatsApp da unidade: {$e->getMessage()}", 422);
         }
 
         $appointment->update(['status' => self::AWAITING_CONFIRMATION_STATUS]);

@@ -33,8 +33,7 @@ class WhatsappWhiteListController extends Controller
 
         $phone = PhoneNumber::forWhatsapp($data['phone']);
 
-        // DDI + DDD + número: 12 (fixo) ou 13 (celular) dígitos.
-        if (!$phone || strlen($phone) < 12 || strlen($phone) > 13) {
+        if (!PhoneNumber::isComplete($phone)) {
             throw ValidationException::withMessages(['phone' => 'Telefone inválido. Informe DDD e número.']);
         }
 
