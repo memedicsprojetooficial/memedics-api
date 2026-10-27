@@ -6,6 +6,8 @@ use App\Models\WhatsappWhiteList;
 use App\Support\PhoneNumber;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -14,9 +16,11 @@ use Illuminate\Validation\ValidationException;
  */
 class WhatsappWhiteListController extends Controller
 {
-    public function index(): JsonResponse
+    public function index(): AnonymousResourceCollection
     {
-        return response()->json(WhatsappWhiteList::orderBy('name')->get());
+        return JsonResource::collection(
+            WhatsappWhiteList::query()->orderBy('name')->orderBy('id')->cursorPaginate(25)->withQueryString()
+        );
     }
 
     public function store(Request $request): JsonResponse

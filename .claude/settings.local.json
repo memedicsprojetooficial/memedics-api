@@ -322,7 +322,10 @@
       "Bash(ls node_modules/lucide-react/dist/esm/icons/ | grep -E \"^bot-off|^shield-off\" ; echo \"== imports da tela do médico ==\"; sed -n 1,24p \"src/routes/_authenticated/doctor.\\\\$doctorId.tsx\"; echo \"== lucide do menu ==\"; sed -n 1,20p src/routes/_authenticated.tsx | grep -A12 \"import {\" | head -14)",
       "Bash(timeout 300 npx vite build)",
       "Bash(echo \"exit build: $?\")",
-      "Bash(grep -E 'whitelist\\\\.tsx|_authenticated\\\\.tsx|doctor\\\\.\\\\$doctorId\\\\.tsx|lib/api\\\\.ts|lib/types\\\\.ts|routeTree' /tmp/tsc3.txt)"
+      "Bash(grep -E 'whitelist\\\\.tsx|_authenticated\\\\.tsx|doctor\\\\.\\\\$doctorId\\\\.tsx|lib/api\\\\.ts|lib/types\\\\.ts|routeTree' /tmp/tsc3.txt)",
+      "Bash(curl -s --max-time 20 \"https://api.memedics.com.br/api/public/appointments/token-inexistente\")",
+      "Bash(curl -s --max-time 20 -H \"Accept: application/json\" \"https://api.memedics.com.br/api/public/appointments/token-inexistente\")",
+      "Bash(php -l app/Http/Controllers/WhatsappWhiteListController.php)"
     ]
   }
 }

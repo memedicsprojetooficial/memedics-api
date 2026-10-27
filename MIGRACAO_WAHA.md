@@ -585,8 +585,16 @@ WAHA (`WORKING`) e envia o texto com o link `FRONTEND_URL/confirmar-consulta/{to
 - **Bug corrigido:** `normalizePhone` tratava telefone com DDD 55 (RS) como se já tivesse o DDI
   (`(55) 99999-8888` virava `55999998888`, número errado). Agora só considera o DDI presente com
   12–13 dígitos; também remove zero à esquerda. 10 formatos testados.
-- **Não verificado:** o valor de `FRONTEND_URL` em produção (se faltar, o link cai em `APP_URL`,
-  o domínio da API, e fica quebrado) e o envio real — ambos só com um teste de ponta a ponta.
+- **Confirmado em 26/10 (primeiro envio real):** a mensagem saiu de produção, mas com o link
+  `http://localhost/confirmar-consulta/...` — `FRONTEND_URL` não está definida em produção
+  (`config/app.php` cai em `APP_URL` e depois em `http://localhost`). O mesmo valor monta o
+  link de **redefinição de senha** (`AppServiceProvider`), que também sai quebrado. O token da
+  mensagem funciona na API e a página abre em `app.memedics.com.br`: é só configuração.
+  Correção: `FRONTEND_URL=https://app.memedics.com.br` no ambiente da API + reiniciar/limpar
+  cache de config.
+- **Achado de segurança:** produção roda com `APP_DEBUG=true` — respostas de erro da API trazem
+  `exception`, `file`, `line` e o `trace` completo (42 linhas, caminhos internos). Deve ser
+  `APP_DEBUG=false` (e `APP_ENV=production`).
 - **Observação:** a versão ativa do n8n mudou para `6a6a786b` (publicada fora desta sessão).
 
 ### Envio automático da confirmação de consulta (26/10/2026)
