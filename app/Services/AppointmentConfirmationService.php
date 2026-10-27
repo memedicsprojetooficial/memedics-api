@@ -77,14 +77,16 @@ class AppointmentConfirmationService
         $date = Carbon::parse($appointment->event->date)->format('d/m/Y');
         $time = $appointment->event->time->format('H:i');
         $doctorName = $appointment->event->doctor->user->name ?? '';
-        $unitName = $appointment->event->doctor->unitAddress->unit_name ?? '';
-        $unitLine = $unitName ? "Local: {$unitName}\n" : '';
+        $unit = $appointment->event->doctor->unitAddress;
+        $unitLine = $unit?->unit_name ? "Local: {$unit->unit_name}\n" : '';
+        $addressLine = $unit?->confirmation_address ? "📍End: {$unit->confirmation_address}\n" : '';
 
         return "Olá, {$firstName}! Segue abaixo os detalhes da sua consulta agendada:\n\n"
             . "Data: {$date}\n"
             . "Horário: {$time}\n"
             . "Médico(a): {$doctorName}\n"
             . $unitLine
+            . $addressLine
             . "\nPara confirmar ou cancelar, acesse o link abaixo:\n{$url}";
     }
 }

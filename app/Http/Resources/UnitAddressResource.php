@@ -24,6 +24,7 @@ class UnitAddressResource extends JsonResource
             'city'           => $this->city,
             'state'          => $this->state,
             'zip_code'               => $this->zip_code,
+            'confirmation_address'   => $this->confirmation_address,
             'waha_session_name'      => $this->waha_session_name,
             'bot_paused'             => $this->isBotPaused(),
             'bot_paused_until'       => $this->isBotPaused() ? $this->bot_paused_until : null,
