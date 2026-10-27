@@ -48,6 +48,7 @@ class UnitAddressesController extends Controller
             'state'         => ['nullable', 'string', 'max:2'],
             'zip_code'      => ['nullable', 'string', 'max:9'],
             'confirmation_address' => ['nullable', 'string', 'max:500'],
+            'confirmation_note'    => ['nullable', 'string', 'max:500'],
         ]);
 
         $unitAddress = UnitAddress::create($input);
@@ -89,6 +90,7 @@ class UnitAddressesController extends Controller
             'state'         => ['sometimes', 'nullable', 'string', 'max:2'],
             'zip_code'      => ['sometimes', 'nullable', 'string', 'max:9'],
             'confirmation_address' => ['sometimes', 'nullable', 'string', 'max:500'],
+            'confirmation_note'    => ['sometimes', 'nullable', 'string', 'max:500'],
         ]);
 
         $unitAddress->update($input);

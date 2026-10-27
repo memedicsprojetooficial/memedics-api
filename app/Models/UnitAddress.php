@@ -25,6 +25,7 @@ class UnitAddress extends Model
         'state',
         'zip_code',
         'confirmation_address',
+        'confirmation_note',
         'waha_session_name',
         'bot_paused',
         'bot_paused_until',

@@ -80,6 +80,7 @@ class AppointmentConfirmationService
         $unit = $appointment->event->doctor->unitAddress;
         $unitLine = $unit?->unit_name ? "Local: {$unit->unit_name}\n" : '';
         $addressLine = $unit?->confirmation_address ? "📍End: {$unit->confirmation_address}\n" : '';
+        $noteLine = $unit?->confirmation_note ? "\n{$unit->confirmation_note}\n" : '';
 
         return "Olá, {$firstName}! Segue abaixo os detalhes da sua consulta agendada:\n\n"
             . "Data: {$date}\n"
@@ -87,6 +88,7 @@ class AppointmentConfirmationService
             . "Médico(a): {$doctorName}\n"
             . $unitLine
             . $addressLine
+            . $noteLine
             . "\nPara confirmar ou cancelar, acesse o link abaixo:\n{$url}";
     }
 }
