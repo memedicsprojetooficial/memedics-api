@@ -326,7 +326,29 @@
       "Bash(curl -s --max-time 20 \"https://api.memedics.com.br/api/public/appointments/token-inexistente\")",
       "Bash(curl -s --max-time 20 -H \"Accept: application/json\" \"https://api.memedics.com.br/api/public/appointments/token-inexistente\")",
       "Bash(php -l app/Http/Controllers/WhatsappWhiteListController.php)",
-      "Bash(curl -s -o /dev/null -D - -X POST https://api.memedics.com.br/api/appointments/0/public-link -H 'Accept: application/json')"
+      "Bash(curl -s -o /dev/null -D - -X POST https://api.memedics.com.br/api/appointments/0/public-link -H 'Accept: application/json')",
+      "Bash(grep -n \"doctors\\\\b\\\\|doctorsData\" src/routes/_authenticated/appointments.tsx; sed -n 874,895p 'src/routes/_authenticated/doctor.$doctorId.tsx'; grep -rn '\"doctors-all\"' src | head)",
+      "Bash(sort -k5 -rn)",
+      "Bash(sed -n 134p src/components/appointments/AppointmentDetailDialog.tsx; sed -n 54p src/components/appointments/AppointmentsListView.tsx; sed -n 89p src/components/appointments/PatientHistoryDialog.tsx; sed -n 85,91p src/routes/_authenticated/dashboard.tsx; sed -n 558p 'src/routes/_authenticated/patient-records.$patientId.tsx'; sed -n 88,92p src/routes/_authenticated/schedule.tsx; grep -rn \"function StatusBadge\\\\|export.*StatusBadge\\\\|statusLabel\\\\b.*=\" src/components src/lib | head -5)",
+      "Bash(awk -F: '{print $1}')",
+      "Bash(f='src/routes/_authenticated/patient-records.$patientId.tsx'; sed -n 1,40p \"$f\" | grep -n \"import\\\\|useQuery\" ; sed -n 140,215p \"$f\"; sed -n 300,345p \"$f\"; sed -n 575,590p src/lib/api.ts; grep -n \"reportConfig\\\\|report-config\" src/lib/api.ts | head)",
+      "Bash(f='src/routes/_authenticated/patient-records.$patientId.tsx'; grep -n \"const tabs\\\\|tabs =\\\\|medicalHistory\\\\|const history\\\\|editItem\" \"$f\" | head; sed -n 425,440p src/lib/api.ts; grep -n \"AppointmentDetail\\\\b\" -r src | grep -v types.ts | head -3; grep -n \"report\" src/lib/api.ts | grep -n \"detail\\\\|report:\" | head; grep -rn \"\\\\.report\\\\b\" src --include=*.tsx | head -5)",
+      "Bash(npx vite *)",
+      "Bash(sort -k2 -t' ')",
+      "Bash(awk '{print}')",
+      "Bash(sort -t'│' -k2)",
+      "Bash(awk '{print $1, $2, $3}')",
+      "Bash(sort -k2 -n -r)",
+      "Bash(awk '{printf \"%7.0f KB  %s\\\\n\", $5/1024, $9}')",
+      "Bash(npx eslint *)",
+      "Bash(awk '{$1=$1};1')",
+      "Bash(echo \"tsc exit $?\")",
+      "Bash(sed -i '130s/ }, \\\\[isAdmin, user?.id, user?.profileId\\\\]\\);/ }, [isAdmin, user?.id, user?.profileId, setSelectedDoctor]\\);/' src/routes/_authenticated.tsx)",
+      "Bash(echo \"build exit $?\")",
+      "Bash(grep -rn \"new QueryClient\" -A8 src | head -12; ls src/hooks; grep -rn '\"doctors-all\"' src; sed -n 290,300p 'src/routes/_authenticated/doctor.$doctorId.tsx'; sed -n 78,86p src/routes/_authenticated/room-availability.tsx)",
+      "Bash(echo \"tsc $?\")",
+      "Bash(echo \"build $?\")",
+      "Bash(cd /mnt/c/Users/Robson/Desktop/frontend-web/memedics-web && sed -n 336,342p src/routes/_authenticated/settings.tsx; grep -n \"setConfigOpen\\(true\\)\\\\|Webhook URL\\\\|<Label\" src/routes/_authenticated/settings.tsx | sed -n 1,8p; grep -rn \"intervalo de atendimento\\\\|Intervalo de atendimento\" 'src/routes/_authenticated/doctor.$doctorId.tsx' | head -2)"
     ]
   }
 }
