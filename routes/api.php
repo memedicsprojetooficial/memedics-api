@@ -13,6 +13,7 @@ use App\Http\Controllers\MedicalReportController;
 use App\Http\Controllers\PatientController;
 use App\Http\Controllers\PatientMedicalReportController;
 use App\Http\Controllers\AppointmentPublicLinkController;
+use App\Http\Controllers\ConfirmationDispatchController;
 use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PlanController;
@@ -150,6 +151,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::put('/appointments/{appointment}/status', [AppointmentStatusController::class, 'store']);
     Route::post('/appointments/{appointment}/public-link', [AppointmentPublicLinkController::class, 'store']);
+    Route::get('/appointments/{appointment}/confirmation-dispatches', [ConfirmationDispatchController::class, 'forAppointment']);
+    Route::get('/confirmation-dispatches', [ConfirmationDispatchController::class, 'index']);
+    Route::get('/confirmation-dispatches/summary', [ConfirmationDispatchController::class, 'summary']);
 
     Route::get('/unavailable-times', [BlockedTimeController::class, 'index']);
     Route::get('/unavailable-times/{unavailableTime}', [BlockedTimeController::class, 'show']);

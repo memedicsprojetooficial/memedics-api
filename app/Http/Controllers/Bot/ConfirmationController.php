@@ -5,11 +5,14 @@ namespace App\Http\Controllers\Bot;
 use App\Exceptions\ConfirmationNotSent;
 use App\Http\Controllers\Controller;
 use App\Models\Appointment;
+use App\Models\ConfirmationDispatch;
+use App\Models\ConfirmationRun;
 use App\Models\DoctorScheduleConfig;
 use App\Models\Event;
 use App\Services\AppointmentConfirmationService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Collection;
 use Throwable;
 
 /**
@@ -32,15 +35,31 @@ class ConfirmationController extends Controller
      * Consultas de médicos com envio automático ligado (`confirmation_days_before`) que caem
      * entre amanhã e hoje + N dias. A janela (e não "exatamente daqui a N dias") faz quem
      * agendou depois da rodada ou ficou de fora por falha ser enviado na rodada seguinte.
+     *
+     * O n8n chama este endpoint uma vez no início de cada rodada, então é aqui que a rodada
+     * fica registrada (`confirmation_runs`) — inclusive quando não há nada a enviar.
      */
     public function due(): JsonResponse
+    {
+        $due = $this->dueList();
+
+        try {
+            ConfirmationRun::create(['due_count' => $due->count()]);
+        } catch (Throwable $e) {
+            report($e);
+        }
+
+        return response()->json($due);
+    }
+
+    private function dueList(): Collection
     {
         $daysByDoctor = DoctorScheduleConfig::whereNotNull('confirmation_days_before')
             ->where('confirmation_days_before', '>', 0)
             ->pluck('confirmation_days_before', 'doctor_id');
 
         if ($daysByDoctor->isEmpty()) {
-            return response()->json([]);
+            return collect();
         }
 
         $today = Carbon::now(self::TIMEZONE)->startOfDay();
@@ -54,7 +73,7 @@ class ConfirmationController extends Controller
             ->orderBy('time')
             ->get();
 
-        $due = $events
+        return $events
             ->filter(fn (Event $e) => $this->isDue($e->getRawOriginal('date'), $today, (int) $daysByDoctor[$e->doctor_id]))
             ->map(fn (Event $e) => [
                 'id'             => $e->id, // id do evento — é o que as rotas de agendamento esperam
@@ -64,8 +83,6 @@ class ConfirmationController extends Controller
                 'time'           => substr($e->getRawOriginal('time'), 0, 5),
             ])
             ->values();
-
-        return response()->json($due);
     }
 
     public function send(Appointment $appointment): JsonResponse
@@ -78,7 +95,7 @@ class ConfirmationController extends Controller
         }
 
         try {
-            $this->confirmation->send($appointment);
+            $this->confirmation->send($appointment, ConfirmationDispatch::ORIGIN_AUTOMATIC);
         } catch (ConfirmationNotSent $e) {
             return response()->json(['sent' => false, 'message' => $e->getMessage()], $e->status);
         } catch (Throwable $e) {

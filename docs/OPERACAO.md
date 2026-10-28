@@ -203,6 +203,19 @@ Na agenda, abra a consulta e clique em **Enviar Confirmação**.
   arriscar bloqueio do número.
 - **Quem entra:** consultas com status "Agendado" de médicos com o envio ligado, de amanhã até
   N dias à frente. Quem ficou de fora por falha entra na rodada seguinte, sem duplicar.
+- **Falha em uma consulta não para as outras:** a rodada registra a falha e segue para a
+  próxima. A consulta continua "Agendado" e é tentada de novo na rodada do dia seguinte.
+
+### Histórico de envios
+
+Menu **Envios de confirmação**: cada tentativa, manual ou automática, com o paciente, a
+consulta, o médico, a unidade, quem enviou e o resultado. Nas falhas aparece o motivo (por
+exemplo, telefone sem DDD): corrija e reenvie pelo botão na agenda. No topo, a **última rodada
+do envio automático** mostra quando rodou e quantas consultas encontrou, enviou e falharam. Se
+a data não for a de hoje depois das 9h, o workflow não rodou: confira se ele está ativo no n8n.
+
+Na agenda, a janela da consulta mostra o último envio dela ("Confirmação enviada em..." ou o
+motivo da falha).
 
 ### Erros ao enviar
 
@@ -227,7 +240,7 @@ minutos.
 |---|---|
 | Erros da API | `storage/logs/laravel.log` no servidor da API |
 | Workers da fila | `/var/www/logs/worker.log` no servidor da API |
-| Bot e envio automático | n8n → workflow → **Executions** |
+| Bot e envio automático | n8n → workflow → **Executions**; para as confirmações, também o menu **Envios de confirmação** |
 | Sessões do WhatsApp | Configurações → Unidades, ou `GET {WAHA_URL}/api/sessions` |
 | Erros no painel | console do navegador (F12) e aba Rede |
 
