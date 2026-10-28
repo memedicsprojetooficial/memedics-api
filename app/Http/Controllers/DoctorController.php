@@ -29,6 +29,10 @@ class DoctorController extends Controller
             $dbQuery->where('specialty_id', $specialtyId);
         }
 
+        if ($unitAddressId = $request->query('unit_address_id')) {
+            $dbQuery->where('unit_addresses_id', $unitAddressId);
+        }
+
         if ($search = $request->query('search')) {
             $like = '%' . $search . '%';
             $digits = preg_replace('/\D+/', '', $search);
