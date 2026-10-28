@@ -23,7 +23,7 @@ class DoctorController extends Controller
      */
     public function index(Request $request): AnonymousResourceCollection
     {
-        $dbQuery = Doctor::with('scheduleConfig');
+        $dbQuery = Doctor::with(['scheduleConfig', ...DoctorResource::RELATIONS]);
 
         if ($specialtyId = $request->query('specialty_id')) {
             $dbQuery->where('specialty_id', $specialtyId);

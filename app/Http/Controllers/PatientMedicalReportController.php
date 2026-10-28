@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\DoctorResource;
 use App\Http\Resources\ReportResource;
 use App\Models\MedicalReport;
 use App\Models\Patient;
@@ -18,7 +19,14 @@ class PatientMedicalReportController extends Controller
      */
     public function index(Request $request, Patient $patient): AnonymousResourceCollection
     {
-        $query = MedicalReport::query();
+        // Relacionamentos lidos por ReportResource e, nesta rota, pelo AppointmentResource embutido.
+        $query = MedicalReport::with([
+            'fieldData',
+            'appointment.patient.address',
+            'appointment.plan',
+            'appointment.payments.appointment.patient',
+            ...DoctorResource::relationsUnder('appointment.event.doctor'),
+        ]);
 
         $query->where(function (Builder $query) use ($request, $patient) {
             $query->whereHas('appointment.patient', function (Builder $query) use ($patient) {

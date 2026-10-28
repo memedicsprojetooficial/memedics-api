@@ -15,6 +15,22 @@ use Illuminate\Http\Resources\Json\JsonResource;
 class DoctorResource extends JsonResource
 {
     /**
+     * Relacionamentos que toArray() sempre lê. Quem devolve uma lista de médicos deve carregá-los
+     * com with(), senão cada médico faz uma consulta por relacionamento (N+1). Os campos
+     * condicionais (information, csatResponses, scheduleConfig) ficam de fora de propósito:
+     * carregá-los acrescentaria esses campos à resposta.
+     */
+    public const RELATIONS = ['user', 'specialty', 'workTimes.unitRoom', 'plans'];
+
+    /**
+     * RELATIONS a partir de outro modelo, ex.: relationsUnder('event.doctor').
+     */
+    public static function relationsUnder(string $path): array
+    {
+        return array_map(fn (string $relation) => "{$path}.{$relation}", self::RELATIONS);
+    }
+
+    /**
      * @param Request $request
      * @return array
      */

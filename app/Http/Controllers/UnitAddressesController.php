@@ -23,7 +23,7 @@ class UnitAddressesController extends Controller
             $unitAdresses->where('unit_name', 'like', sprintf('%s%%', $request->query('search')));
         }
 
-        $unitAdresses->with('company')->orderBy('unit_name');
+        $unitAdresses->with(['company', 'businessHours'])->orderBy('unit_name');
 
         return UnitAddressResource::collection($unitAdresses->cursorPaginate(25)->withQueryString());
     }

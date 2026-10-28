@@ -2,7 +2,9 @@
 
 namespace App\Http\Resources;
 
+use App\Models\Appointment;
 use App\Models\IdeHelperEvent;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -11,6 +13,20 @@ use Illuminate\Http\Resources\Json\JsonResource;
  */
 class EventResource extends JsonResource
 {
+    /**
+     * Relacionamentos que toArray() lê, para carregar com with() em listas de eventos (agenda,
+     * histórico do paciente) sem N+1. Só os agendamentos têm relacionamentos a carregar.
+     */
+    public static function relations(): array
+    {
+        return [
+            ...DoctorResource::relationsUnder('doctor'),
+            'event' => fn (MorphTo $morphTo) => $morphTo->morphWith([
+                Appointment::class => ['patient.address', 'plan', 'payments.appointment.patient'],
+            ]),
+        ];
+    }
+
     /**
      * @param Request $request
      * @return array

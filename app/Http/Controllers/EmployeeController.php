@@ -15,7 +15,7 @@ class EmployeeController extends Controller
 {
     public function index(Request $request): AnonymousResourceCollection
     {
-        $dbQuery = Employee::query()
+        $dbQuery = Employee::with('user')
             ->join('users', function ($join) {
                 $join->on('users.profile_id', '=', 'employees.id')
                     ->where('users.type', '=', 'employee');

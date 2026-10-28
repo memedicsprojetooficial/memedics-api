@@ -350,7 +350,11 @@
       "Bash(echo \"build $?\")",
       "Bash(cd /mnt/c/Users/Robson/Desktop/frontend-web/memedics-web && sed -n 336,342p src/routes/_authenticated/settings.tsx; grep -n \"setConfigOpen\\(true\\)\\\\|Webhook URL\\\\|<Label\" src/routes/_authenticated/settings.tsx | sed -n 1,8p; grep -rn \"intervalo de atendimento\\\\|Intervalo de atendimento\" 'src/routes/_authenticated/doctor.$doctorId.tsx' | head -2)",
       "Bash(php -l app/Services/AppointmentConfirmationService.php)",
-      "Bash(php -l app/Http/Controllers/Bot/ConfirmationController.php)"
+      "Bash(php -l app/Http/Controllers/Bot/ConfirmationController.php)",
+      "Bash(grep -n '$this->[a-zA-Z_]*->\\\\|whenLoaded\\\\|relationLoaded\\\\|csat\\\\|->count\\\\|->avg')",
+      "Bash(grep -n '$this->[a-zA-Z]*->\\\\|$this->[a-zA-Z]*?->' app/Http/Resources/WorkTimeResource.php app/Http/Resources/DoctorPlanResource.php)",
+      "Bash(./vendor/bin/sail artisan *)",
+      "Bash(./vendor/bin/sail exec *)"
     ]
   }
 }

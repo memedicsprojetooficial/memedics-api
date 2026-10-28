@@ -23,7 +23,7 @@ class PatientController extends Controller
      */
     public function index(Request $request): AnonymousResourceCollection
     {
-        $dbQuery = Patient::query();
+        $dbQuery = Patient::with('address');
 
         if ($doctorId = $request->query('doctor_id')) {
             $dbQuery->whereHas('appointments.event', function ($query) use ($doctorId) {
@@ -155,9 +155,10 @@ class PatientController extends Controller
      */
     public function appointments(Patient $patient): AnonymousResourceCollection
     {
-        $query = Event::whereHasMorph('event', [Appointment::class], function (Builder $query) use ($patient) {
-            $query->where('patient_id', $patient->id);
-        });
+        $query = Event::with(EventResource::relations())
+            ->whereHasMorph('event', [Appointment::class], function (Builder $query) use ($patient) {
+                $query->where('patient_id', $patient->id);
+            });
 
         $query->orderBy('date', 'DESC')->orderBy('id', 'DESC');
 

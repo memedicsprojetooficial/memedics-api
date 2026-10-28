@@ -16,7 +16,7 @@ class ScheduleController extends Controller
      */
     public function index(Request $request, Doctor $doctor): AnonymousResourceCollection
     {
-        $query = $doctor->events();
+        $query = $doctor->events()->with(EventResource::relations());
 
         $query->orderBy('date', 'DESC')->orderBy('id', 'DESC');
 
