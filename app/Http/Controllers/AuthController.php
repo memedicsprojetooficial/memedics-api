@@ -34,6 +34,7 @@ class AuthController extends Controller
                 'name' => $user->name,
                 'email' => $user->email,
                 'admin' => $user->admin,
+                'type' => $user->type, // doctor | employee
                 'profile_id' => $user->profile_id,
                 'unit_addresses_id' => $user->unit_addresses_id,
             ],

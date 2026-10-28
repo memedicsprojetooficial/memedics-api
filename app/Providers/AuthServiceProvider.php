@@ -28,5 +28,8 @@ class AuthServiceProvider extends ServiceProvider
 
         // Gestão das instâncias de WhatsApp (Evolution Go) é restrita a administradores.
         Gate::define('manage-whatsapp', fn (User $user) => (bool) $user->admin);
+
+        // Tela "Envios de confirmação": equipe da clínica, nunca médicos.
+        Gate::define('view-confirmation-dispatches', fn (User $user) => $user->type !== 'doctor');
     }
 }
