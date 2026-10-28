@@ -20,6 +20,8 @@ class EmployeeResource extends JsonResource
             'type' => $this->user->type,
             'admin' => $this->user->admin,
             'access_all_schedules' => $this->access_all_schedules,
+            // Unidades em que atende (define com quais médicos conversa no chat).
+            'unit_address_ids' => $this->units->pluck('id'),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at
         ];

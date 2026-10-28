@@ -15,7 +15,7 @@ class EmployeeController extends Controller
 {
     public function index(Request $request): AnonymousResourceCollection
     {
-        $dbQuery = Employee::with('user')
+        $dbQuery = Employee::with(['user', 'units'])
             ->join('users', function ($join) {
                 $join->on('users.profile_id', '=', 'employees.id')
                     ->where('users.type', '=', 'employee');
@@ -46,7 +46,9 @@ class EmployeeController extends Controller
             'email' => ['required', 'string', 'max:255', 'email', 'unique:users'],
             'password' => ['required', 'string', 'max:255'],
             'admin' => ['required', 'boolean'],
-            'access_all_schedules' => ['required', 'boolean']
+            'access_all_schedules' => ['required', 'boolean'],
+            'unit_address_ids' => ['sometimes', 'array'],
+            'unit_address_ids.*' => ['integer', 'exists:unit_addresses,id'],
         ], [
             'email.unique' => 'Este e-mail já está cadastrado.',
         ]);
@@ -55,6 +57,10 @@ class EmployeeController extends Controller
         $user = new User($input);
 
         $employee->user()->save($user);
+
+        if (array_key_exists('unit_address_ids', $input)) {
+            $employee->units()->sync($input['unit_address_ids']);
+        }
 
         return new EmployeeResource($employee);
     }
@@ -65,13 +71,19 @@ class EmployeeController extends Controller
             'name' => ['required', 'string', 'min:3', 'max:255'],
             'email' => ['required', 'string', 'max:255', 'email', Rule::unique('users')->ignore($employee->user->id)],
             'admin' => ['required', 'boolean'],
-            'access_all_schedules' => ['required', 'boolean']
+            'access_all_schedules' => ['required', 'boolean'],
+            'unit_address_ids' => ['sometimes', 'array'],
+            'unit_address_ids.*' => ['integer', 'exists:unit_addresses,id'],
         ], [
             'email.unique' => 'Este e-mail já está cadastrado.',
         ]);
 
         $employee->update($input);
         $employee->user->update($input);
+
+        if (array_key_exists('unit_address_ids', $input)) {
+            $employee->units()->sync($input['unit_address_ids']);
+        }
 
         return new EmployeeResource($employee);
     }

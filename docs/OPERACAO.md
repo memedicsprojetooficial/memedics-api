@@ -236,6 +236,22 @@ motivo da falha).
 | "Não foi possível enviar pelo WhatsApp da unidade: ..." | O texto depois dos dois-pontos é o erro da WAHA. |
 | Link chega com `localhost` | Definir `FRONTEND_URL` na API e rodar `php artisan config:cache`. |
 
+## Chat médico ↔ recepção
+
+O médico conversa com a **recepção da unidade dele** (a unidade do cadastro do médico): qualquer
+atendente online daquela unidade vê e responde. O botão do chat fica no canto inferior direito
+do painel ("Recepção" para o médico, "Chat" para o atendente).
+
+- **Unidade do atendente:** em **Funcionários → editar**, marque as unidades em que ele atende.
+  Pode marcar duas para cobrir uma falta. Atendente sem unidade não vê o chat.
+- **Online = painel aberto.** O painel avisa a API a cada 25 s; sem aviso por 60 s, a pessoa
+  conta como offline. Sair do sistema tira do chat na hora.
+- **Só se envia com o outro lado online:** o médico, com algum atendente da unidade online; o
+  atendente, com o médico online. Fora disso, o campo de mensagem fica bloqueado com o aviso.
+- **Mensagens duram 7 dias:** as mais antigas deixam de aparecer e são apagadas.
+- As mensagens chegam na hora pelo Pusher (o mesmo da agenda). Se o Pusher falhar, a conversa
+  se atualiza sozinha a cada 25 s.
+
 ## Agenda
 
 O intervalo dos horários na agenda e no bot segue o **Intervalo de atendimento** de cada

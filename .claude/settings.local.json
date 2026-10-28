@@ -354,7 +354,9 @@
       "Bash(grep -n '$this->[a-zA-Z_]*->\\\\|whenLoaded\\\\|relationLoaded\\\\|csat\\\\|->count\\\\|->avg')",
       "Bash(grep -n '$this->[a-zA-Z]*->\\\\|$this->[a-zA-Z]*?->' app/Http/Resources/WorkTimeResource.php app/Http/Resources/DoctorPlanResource.php)",
       "Bash(./vendor/bin/sail artisan *)",
-      "Bash(./vendor/bin/sail exec *)"
+      "Bash(./vendor/bin/sail exec *)",
+      "Bash(grep -i -o '\"value\": \"[^\"]\\\\{0,4\\\\}' clava-api-postman.json)",
+      "Bash(grep -n 'is_callable\\\\|Closure\\\\|$prop\\(')"
     ]
   }
 }

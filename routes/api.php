@@ -14,6 +14,7 @@ use App\Http\Controllers\PatientController;
 use App\Http\Controllers\PatientMedicalReportController;
 use App\Http\Controllers\AppointmentPublicLinkController;
 use App\Http\Controllers\ConfirmationDispatchController;
+use App\Http\Controllers\ChatController;
 use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PlanController;
@@ -155,6 +156,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/appointments/{appointment}/confirmation-dispatches', [ConfirmationDispatchController::class, 'forAppointment']);
     Route::get('/confirmation-dispatches', [ConfirmationDispatchController::class, 'index']);
     Route::get('/confirmation-dispatches/summary', [ConfirmationDispatchController::class, 'summary']);
+
+    Route::prefix('chat')->group(function () {
+        Route::post('/heartbeat', [ChatController::class, 'heartbeat']);
+        Route::get('/conversations', [ChatController::class, 'conversations']);
+        Route::get('/doctors/{doctor}/messages', [ChatController::class, 'messages']);
+        Route::post('/doctors/{doctor}/messages', [ChatController::class, 'send'])->middleware('throttle:30,1');
+        Route::post('/doctors/{doctor}/read', [ChatController::class, 'markRead']);
+    });
 
     Route::get('/unavailable-times', [BlockedTimeController::class, 'index']);
     Route::get('/unavailable-times/{unavailableTime}', [BlockedTimeController::class, 'show']);

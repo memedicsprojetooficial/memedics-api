@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Services\ChatService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
@@ -46,6 +47,8 @@ class AuthController extends Controller
     public function logout(Request $request)
     {
         $request->user()->currentAccessToken()->delete();
+        // Sai do chat na hora, sem esperar o sinal de online expirar.
+        app(ChatService::class)->forget($request->user());
 
         return response()->json(['message' => 'Logout realizado com sucesso.']);
     }
