@@ -193,6 +193,14 @@ Em branco, a linha não aparece.
 
 Na agenda, abra a consulta e clique em **Enviar Confirmação**.
 
+### Cobrar a confirmação
+
+Se o paciente não respondeu, na **véspera ou no dia da consulta** o botão do modal vira
+**Cobrar Confirmação** (só para consultas em "Aguardando Confirmação"). Ele envia um lembrete
+("Sua consulta é amanhã... Ainda não recebemos sua confirmação") com o mesmo link. É sempre
+manual, pode ser repetido e não muda o status. O modal mostra quando foi a última cobrança, e
+ela aparece na tela de envios com o tipo **Cobrança**.
+
 ### Envio automático
 
 - **Por médico:** no perfil do médico, card "Configuração do calendário" → Confirmação

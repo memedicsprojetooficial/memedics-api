@@ -151,6 +151,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::put('/appointments/{appointment}/status', [AppointmentStatusController::class, 'store']);
     Route::post('/appointments/{appointment}/public-link', [AppointmentPublicLinkController::class, 'store']);
+    Route::post('/appointments/{appointment}/confirmation-reminder', [AppointmentPublicLinkController::class, 'remind']);
     Route::get('/appointments/{appointment}/confirmation-dispatches', [ConfirmationDispatchController::class, 'forAppointment']);
     Route::get('/confirmation-dispatches', [ConfirmationDispatchController::class, 'index']);
     Route::get('/confirmation-dispatches/summary', [ConfirmationDispatchController::class, 'summary']);

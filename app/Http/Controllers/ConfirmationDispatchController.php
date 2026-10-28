@@ -25,12 +25,14 @@ class ConfirmationDispatchController extends Controller
             'result' => ['nullable', 'in:sent,failed'],
             'origin' => ['nullable', 'in:' . ConfirmationDispatch::ORIGIN_MANUAL . ',' . ConfirmationDispatch::ORIGIN_AUTOMATIC],
             'date'   => ['nullable', 'date_format:Y-m-d'],
+            'kind'   => ['nullable', 'in:' . ConfirmationDispatch::KIND_CONFIRMATION . ',' . ConfirmationDispatch::KIND_REMINDER],
         ]);
 
         $query = ConfirmationDispatch::query()
             ->with(['patient', 'doctor.user', 'unitAddress', 'user'])
             ->when($filters['result'] ?? null, fn ($q, $result) => $q->where('sent', $result === 'sent'))
             ->when($filters['origin'] ?? null, fn ($q, $origin) => $q->where('origin', $origin))
+            ->when($filters['kind'] ?? null, fn ($q, $kind) => $q->where('kind', $kind))
             ->when($filters['date'] ?? null, function ($q, $date) {
                 // O dia é o de Brasília; created_at fica em UTC.
                 $start = Carbon::parse($date, self::TIMEZONE)->startOfDay()->utc();
@@ -56,6 +58,7 @@ class ConfirmationDispatchController extends Controller
 
         // Os envios de uma rodada são os automáticos feitos depois dela começar (até a próxima, se houver).
         $dispatches = ConfirmationDispatch::where('origin', ConfirmationDispatch::ORIGIN_AUTOMATIC)
+            ->where('kind', ConfirmationDispatch::KIND_CONFIRMATION)
             ->where('created_at', '>=', $run->created_at);
 
         return response()->json([
@@ -93,6 +96,7 @@ class ConfirmationDispatchController extends Controller
             'unit_name'      => $d->unitAddress?->unit_name,
             'scheduled_for'  => $d->scheduled_for?->format('Y-m-d H:i'),
             'origin'         => $d->origin,
+            'kind'           => $d->kind ?? ConfirmationDispatch::KIND_CONFIRMATION,
             'sent'           => $d->sent,
             'reason'         => $d->reason,
             'user_name'      => $d->user?->name,

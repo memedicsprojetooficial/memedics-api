@@ -30,4 +30,23 @@ class AppointmentPublicLinkController extends Controller
 
         return response()->json(['message' => 'Mensagem de confirmação enviada com sucesso.']);
     }
+
+    /**
+     * Cobra a resposta do paciente que ainda está "Aguardando Confirmação", na véspera ou no
+     * dia da consulta (botão "Cobrar Confirmação").
+     */
+    public function remind(Appointment $appointment): JsonResponse
+    {
+        try {
+            $this->confirmation->remind($appointment);
+        } catch (ConfirmationNotSent $e) {
+            return response()->json(['message' => $e->getMessage()], $e->status);
+        } catch (Throwable $e) {
+            report($e);
+
+            return response()->json(['message' => 'Erro interno ao enviar a cobrança pelo WhatsApp.'], 500);
+        }
+
+        return response()->json(['message' => 'Cobrança de confirmação enviada com sucesso.']);
+    }
 }

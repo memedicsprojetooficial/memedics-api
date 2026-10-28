@@ -14,8 +14,8 @@ use Throwable;
 
 /**
  * Envia ao paciente, pelo WhatsApp da unidade, o link público para confirmar ou cancelar a
- * consulta. Usado pelo botão "Enviar Confirmação" e pelo envio automático. Cada tentativa,
- * com o resultado, fica em `confirmation_dispatches`.
+ * consulta. Usado pelo botão "Enviar Confirmação", pelo envio automático e pela cobrança
+ * ("Cobrar Confirmação"). Cada tentativa, com o resultado, fica em `confirmation_dispatches`.
  */
 class AppointmentConfirmationService
 {
@@ -23,6 +23,8 @@ class AppointmentConfirmationService
      * Status "Aguardando Confirmação" — setado automaticamente ao enviar o link.
      */
     public const AWAITING_CONFIRMATION_STATUS = 13;
+
+    private const TIMEZONE = 'America/Sao_Paulo';
 
     public function __construct(private readonly WahaService $waha)
     {
@@ -34,27 +36,73 @@ class AppointmentConfirmationService
      */
     public function send(Appointment $appointment, string $origin = ConfirmationDispatch::ORIGIN_MANUAL): void
     {
-        try {
-            $this->deliver($appointment);
-        } catch (ConfirmationNotSent $e) {
-            $this->record($appointment, $origin, false, $e->getMessage());
-            throw $e;
-        } catch (Throwable $e) {
-            $this->record($appointment, $origin, false, 'Erro interno ao enviar a confirmação.');
-            throw $e;
-        }
-
-        // Registra antes de mudar o status: a mensagem já saiu, mesmo que o resto falhe.
-        $this->record($appointment, $origin, true);
+        $this->attempt($appointment, $origin, ConfirmationDispatch::KIND_CONFIRMATION,
+            fn (string $url) => $this->buildMessage($appointment, $url));
 
         $appointment->update(['status' => self::AWAITING_CONFIRMATION_STATUS]);
         ScheduleUpdated::dispatch($appointment->event->doctor);
     }
 
     /**
+     * Cobrança: lembra o paciente que ainda não respondeu, na véspera ou no dia da consulta.
+     * Só manual, pode repetir e não muda o status.
+     *
      * @throws ConfirmationNotSent
      */
-    private function deliver(Appointment $appointment): void
+    public function remind(Appointment $appointment): void
+    {
+        if ((int) $appointment->status !== self::AWAITING_CONFIRMATION_STATUS) {
+            throw new ConfirmationNotSent('O paciente já respondeu ou a consulta não está aguardando confirmação.', 409);
+        }
+
+        $day = $this->daysUntil($appointment);
+
+        if ($day !== 0 && $day !== 1) {
+            throw new ConfirmationNotSent('A cobrança só pode ser enviada na véspera ou no dia da consulta.', 422);
+        }
+
+        $this->attempt($appointment, ConfirmationDispatch::ORIGIN_MANUAL, ConfirmationDispatch::KIND_REMINDER,
+            fn (string $url) => $this->buildReminder($appointment, $url, $day === 0 ? 'hoje' : 'amanhã'));
+    }
+
+    /**
+     * Envia e grava a tentativa no histórico, com sucesso ou falha.
+     *
+     * @param callable(string): string $buildMessage recebe o link e devolve o texto
+     * @throws ConfirmationNotSent
+     */
+    private function attempt(Appointment $appointment, string $origin, string $kind, callable $buildMessage): void
+    {
+        try {
+            $this->deliver($appointment, $buildMessage);
+        } catch (ConfirmationNotSent $e) {
+            $this->record($appointment, $origin, $kind, false, $e->getMessage());
+            throw $e;
+        } catch (Throwable $e) {
+            $this->record($appointment, $origin, $kind, false, 'Erro interno ao enviar a confirmação.');
+            throw $e;
+        }
+
+        // Registra antes de quem chamou mudar o status: a mensagem já saiu, mesmo que o resto falhe.
+        $this->record($appointment, $origin, $kind, true);
+    }
+
+    /**
+     * Dias da data de hoje (Brasília) até a data da consulta: 0 = hoje, 1 = amanhã.
+     */
+    private function daysUntil(Appointment $appointment): int
+    {
+        $date = substr((string) ($appointment->event->getAttributes()['date'] ?? ''), 0, 10);
+        $today = Carbon::now(self::TIMEZONE)->startOfDay();
+
+        return (int) $today->diffInDays(Carbon::parse($date, self::TIMEZONE)->startOfDay(), false);
+    }
+
+    /**
+     * @param callable(string): string $buildMessage
+     * @throws ConfirmationNotSent
+     */
+    private function deliver(Appointment $appointment, callable $buildMessage): void
     {
         if (!$appointment->public_token) {
             $appointment->update(['public_token' => Str::random(40)]);
@@ -86,7 +134,7 @@ class AppointmentConfirmationService
             $baseUrl = rtrim(config('app.frontend_url'), '/');
             $url = "{$baseUrl}/confirmar-consulta/{$appointment->public_token}";
 
-            $this->waha->sendLinkMessage($unit->waha_session_name, $number, $this->buildMessage($appointment, $url));
+            $this->waha->sendLinkMessage($unit->waha_session_name, $number, $buildMessage($url));
         } catch (RuntimeException $e) {
             // 422, não 502: o nginx de produção troca respostas 5xx pela página HTML de erro
             // e o atendente perderia a mensagem.
@@ -97,7 +145,7 @@ class AppointmentConfirmationService
     /**
      * Grava a tentativa no histórico. Uma falha aqui nunca impede nem desfaz o envio.
      */
-    private function record(Appointment $appointment, string $origin, bool $sent, ?string $reason = null): void
+    private function record(Appointment $appointment, string $origin, string $kind, bool $sent, ?string $reason = null): void
     {
         try {
             $event = $appointment->event;
@@ -113,6 +161,7 @@ class AppointmentConfirmationService
                 'unit_address_id' => $event?->doctor?->unit_addresses_id,
                 'scheduled_for'   => $date ? trim("{$date} {$time}") : null,
                 'origin'          => $origin,
+                'kind'            => $kind,
                 'sent'            => $sent,
                 'reason'          => $reason ? Str::limit($reason, 497) : null,
                 'user_id'         => auth()->id(),
@@ -124,22 +173,48 @@ class AppointmentConfirmationService
 
     private function buildMessage(Appointment $appointment, string $url): string
     {
-        $firstName = explode(' ', trim($appointment->patient->name))[0];
         $date = Carbon::parse($appointment->event->date)->format('d/m/Y');
         $time = $appointment->event->time->format('H:i');
         $doctorName = $appointment->event->doctor->user->name ?? '';
+
+        return "Olá, {$this->firstName($appointment)}! Segue abaixo os detalhes da sua consulta agendada:\n\n"
+            . "Data: {$date}\n"
+            . "Horário: {$time}\n"
+            . "Médico(a): {$doctorName}\n"
+            . $this->unitLines($appointment)
+            . "\nPara confirmar ou cancelar, acesse o link abaixo:\n{$url}";
+    }
+
+    /**
+     * @param string $when "hoje" ou "amanhã"
+     */
+    private function buildReminder(Appointment $appointment, string $url, string $when): string
+    {
+        $date = Carbon::parse($appointment->event->date)->format('d/m');
+        $time = $appointment->event->time->format('H:i');
+        $doctorName = $appointment->event->doctor->user->name ?? '';
+        $withDoctor = $doctorName ? ", com {$doctorName}" : '';
+
+        return "Olá, {$this->firstName($appointment)}! Sua consulta é {$when}, {$date} às {$time}{$withDoctor}.\n"
+            . $this->unitLines($appointment)
+            . "\nAinda não recebemos sua confirmação. Por favor, confirme ou cancele pelo link abaixo:\n{$url}";
+    }
+
+    private function firstName(Appointment $appointment): string
+    {
+        return explode(' ', trim($appointment->patient->name))[0];
+    }
+
+    /**
+     * Local, endereço e aviso da unidade, como aparecem nas duas mensagens.
+     */
+    private function unitLines(Appointment $appointment): string
+    {
         $unit = $appointment->event->doctor->unitAddress;
         $unitLine = $unit?->unit_name ? "Local: {$unit->unit_name}\n" : '';
         $addressLine = $unit?->confirmation_address ? "📍End: {$unit->confirmation_address}\n" : '';
         $noteLine = $unit?->confirmation_note ? "\n{$unit->confirmation_note}\n" : '';
 
-        return "Olá, {$firstName}! Segue abaixo os detalhes da sua consulta agendada:\n\n"
-            . "Data: {$date}\n"
-            . "Horário: {$time}\n"
-            . "Médico(a): {$doctorName}\n"
-            . $unitLine
-            . $addressLine
-            . $noteLine
-            . "\nPara confirmar ou cancelar, acesse o link abaixo:\n{$url}";
+        return $unitLine . $addressLine . $noteLine;
     }
 }

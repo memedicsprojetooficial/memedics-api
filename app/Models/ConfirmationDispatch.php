@@ -13,6 +13,9 @@ class ConfirmationDispatch extends Model
     public const ORIGIN_MANUAL = 'manual';
     public const ORIGIN_AUTOMATIC = 'automatic';
 
+    public const KIND_CONFIRMATION = 'confirmation';
+    public const KIND_REMINDER = 'reminder';
+
     protected $fillable = [
         'appointment_id',
         'event_id',
@@ -21,6 +24,7 @@ class ConfirmationDispatch extends Model
         'unit_address_id',
         'scheduled_for',
         'origin',
+        'kind',
         'sent',
         'reason',
         'user_id',
