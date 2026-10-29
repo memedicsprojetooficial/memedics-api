@@ -89,8 +89,11 @@ npx tsc --noEmit
 npm run build
 ```
 
-O painel é um app instalável (PWA): quem estiver com ele aberto recebe a versão nova ao
-recarregar a página.
+O painel é um app instalável (PWA) e fica guardado no navegador. Depois de publicar, quem está
+com ele aberto vê o aviso **"Nova versão disponível — Atualizar"** quando a versão nova termina de
+baixar (o sistema procura atualização ao abrir, a cada 30 minutos e quando a aba volta a ficar
+visível). O sistema não recarrega sozinho, para ninguém perder um formulário pela metade. Para
+ver a versão nova na hora, sem esperar o aviso: Ctrl+Shift+R.
 
 ## WhatsApp de uma unidade
 
