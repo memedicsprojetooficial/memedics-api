@@ -22,6 +22,8 @@ class EmployeeResource extends JsonResource
             'access_all_schedules' => $this->access_all_schedules,
             'phone' => $this->phone,
             'work_schedule' => $this->work_schedule ?? [],
+            // Entrada da whitelist do bot com este telefone (null se não está na lista).
+            'whitelist_id' => $this->whitelistId,
             // Unidades em que atende (define com quais médicos conversa no chat).
             'unit_address_ids' => $this->units->pluck('id'),
             'created_at' => $this->created_at,

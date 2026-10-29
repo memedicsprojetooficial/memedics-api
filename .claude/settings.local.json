@@ -367,7 +367,10 @@
       "Bash(php -l app/Http/Controllers/ConfirmationDispatchController.php)",
       "Bash(php -l app/Models/ConfirmationDispatch.php)",
       "Bash(node.exe node_modules/eslint/bin/eslint.js src/routes/_authenticated/employees.tsx src/lib/masks.ts src/lib/api.ts src/routes/_authenticated/settings.tsx)",
-      "Bash(node.exe node_modules/vite/bin/vite.js build)"
+      "Bash(node.exe node_modules/vite/bin/vite.js build)",
+      "Bash(curl -s -m 15 https://app.memedics.com.br/assets/index-CtsFWjFi.js)",
+      "Bash(curl -s -m 15 https://app.memedics.com.br/assets/employees-CDlG0csj.js)",
+      "Bash(curl -sI -m 10 https://app.memedics.com.br/)"
     ]
   }
 }

@@ -49,11 +49,16 @@ class EmployeeController extends Controller
             });
         }
 
-        return EmployeeResource::collection($dbQuery->cursorPaginate(25)->withQueryString());
+        $employees = $dbQuery->cursorPaginate(25)->withQueryString();
+        Employee::withWhitelist($employees->items());
+
+        return EmployeeResource::collection($employees);
     }
 
     public function show(Employee $employee): EmployeeResource
     {
+        Employee::withWhitelist([$employee]);
+
         return new EmployeeResource($employee);
     }
 
@@ -79,6 +84,8 @@ class EmployeeController extends Controller
             $employee->units()->sync($input['unit_address_ids']);
         }
 
+        Employee::withWhitelist([$employee]);
+
         return new EmployeeResource($employee);
     }
 
@@ -100,6 +107,8 @@ class EmployeeController extends Controller
         if (array_key_exists('unit_address_ids', $input)) {
             $employee->units()->sync($input['unit_address_ids']);
         }
+
+        Employee::withWhitelist([$employee]);
 
         return new EmployeeResource($employee);
     }
