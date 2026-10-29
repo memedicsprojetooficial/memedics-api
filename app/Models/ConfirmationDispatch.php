@@ -35,6 +35,14 @@ class ConfirmationDispatch extends Model
         'scheduled_for' => 'datetime',
     ];
 
+    /**
+     * Evento atual do agendamento (data e médico podem ter mudado depois do envio; some se foi excluído).
+     */
+    public function event(): BelongsTo
+    {
+        return $this->belongsTo(Event::class);
+    }
+
     public function patient(): BelongsTo
     {
         return $this->belongsTo(Patient::class)->withTrashed();

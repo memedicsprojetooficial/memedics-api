@@ -356,7 +356,16 @@
       "Bash(./vendor/bin/sail artisan *)",
       "Bash(./vendor/bin/sail exec *)",
       "Bash(grep -i -o '\"value\": \"[^\"]\\\\{0,4\\\\}' clava-api-postman.json)",
-      "Bash(grep -n 'is_callable\\\\|Closure\\\\|$prop\\(')"
+      "Bash(grep -n 'is_callable\\\\|Closure\\\\|$prop\\(')",
+      "Bash(python3 -c \"import PIL; print\\('PIL', PIL.__version__\\)\")",
+      "Bash(git log *)",
+      "Bash(node scripts/release.mjs --dry-run --from 77933dd)",
+      "Bash(node.exe --version)",
+      "Bash(node.exe scripts/release.mjs --dry-run --from 77933dd)",
+      "Bash(node.exe scripts/release.mjs --no-commit --from 77933dd)",
+      "Bash(grep -n 'SoftDeletes\\\\|protected $casts' -A3 /home/masterdba6/projetos/memedics-api/app/Models/Event.php)",
+      "Bash(php -l app/Http/Controllers/ConfirmationDispatchController.php)",
+      "Bash(php -l app/Models/ConfirmationDispatch.php)"
     ]
   }
 }

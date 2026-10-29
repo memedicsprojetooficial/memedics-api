@@ -26,13 +26,15 @@ class ConfirmationDispatchController extends Controller
             'origin' => ['nullable', 'in:' . ConfirmationDispatch::ORIGIN_MANUAL . ',' . ConfirmationDispatch::ORIGIN_AUTOMATIC],
             'date'   => ['nullable', 'date_format:Y-m-d'],
             'kind'   => ['nullable', 'in:' . ConfirmationDispatch::KIND_CONFIRMATION . ',' . ConfirmationDispatch::KIND_REMINDER],
+            'unit_address_id' => ['nullable', 'integer'],
         ]);
 
         $query = ConfirmationDispatch::query()
-            ->with(['patient', 'doctor.user', 'unitAddress', 'user'])
+            ->with(['patient', 'doctor.user', 'unitAddress', 'user', 'event'])
             ->when($filters['result'] ?? null, fn ($q, $result) => $q->where('sent', $result === 'sent'))
             ->when($filters['origin'] ?? null, fn ($q, $origin) => $q->where('origin', $origin))
             ->when($filters['kind'] ?? null, fn ($q, $kind) => $q->where('kind', $kind))
+            ->when($filters['unit_address_id'] ?? null, fn ($q, $unitId) => $q->where('unit_address_id', $unitId))
             ->when($filters['date'] ?? null, function ($q, $date) {
                 // O dia é o de Brasília; created_at fica em UTC.
                 $start = Carbon::parse($date, self::TIMEZONE)->startOfDay()->utc();
@@ -76,7 +78,7 @@ class ConfirmationDispatchController extends Controller
      */
     public function forAppointment(Appointment $appointment): JsonResponse
     {
-        $dispatches = ConfirmationDispatch::with('user')
+        $dispatches = ConfirmationDispatch::with(['user', 'event'])
             ->where('appointment_id', $appointment->id)
             ->orderByDesc('id')
             ->limit(10)
@@ -91,6 +93,10 @@ class ConfirmationDispatchController extends Controller
         return [
             'id'             => $d->id,
             'event_id'       => $d->event_id,
+            'patient_id'     => $d->patient_id,
+            // Médico e data atuais do agendamento, para abrir na agenda; nulos se ele foi excluído.
+            'appointment_doctor_id' => $d->event?->doctor_id,
+            'appointment_date'      => $d->event ? substr((string) $d->event->getAttributes()['date'], 0, 10) : null,
             'patient_name'   => $d->patient?->name,
             'doctor_name'    => $d->doctor?->user?->name,
             'unit_name'      => $d->unitAddress?->unit_name,
