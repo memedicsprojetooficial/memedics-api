@@ -365,7 +365,9 @@
       "Bash(node.exe scripts/release.mjs --no-commit --from 77933dd)",
       "Bash(grep -n 'SoftDeletes\\\\|protected $casts' -A3 /home/masterdba6/projetos/memedics-api/app/Models/Event.php)",
       "Bash(php -l app/Http/Controllers/ConfirmationDispatchController.php)",
-      "Bash(php -l app/Models/ConfirmationDispatch.php)"
+      "Bash(php -l app/Models/ConfirmationDispatch.php)",
+      "Bash(node.exe node_modules/eslint/bin/eslint.js src/routes/_authenticated/employees.tsx src/lib/masks.ts src/lib/api.ts src/routes/_authenticated/settings.tsx)",
+      "Bash(node.exe node_modules/vite/bin/vite.js build)"
     ]
   }
 }
